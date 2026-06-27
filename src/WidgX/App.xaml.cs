@@ -2,6 +2,7 @@
 using WidgX.Overlay;
 using WidgX.Persistence;
 using WidgX.Tray;
+using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
 using Application = System.Windows.Application;
 
@@ -17,6 +18,7 @@ public partial class App : Application
         base.OnStartup(e);
 
         ClockWidgetRegistration.Register();
+        CalendarWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();
