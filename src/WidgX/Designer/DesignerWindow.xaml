@@ -1,0 +1,22 @@
+<Window x:Class="WidgX.Designer.DesignerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WidgX Designer" Width="900" Height="650"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+            <TextBlock Text="Screen:" VerticalAlignment="Center" Margin="0,0,6,0" />
+            <ComboBox x:Name="ScreenPicker" Width="220" DisplayMemberPath="FriendlyName"
+                      SelectionChanged="OnScreenChanged" />
+        </StackPanel>
+        <Border DockPanel.Dock="Bottom" Padding="8" Background="#EEEEEE">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="DiscardButton" Content="Discard" Width="80" Margin="0,0,8,0" Click="OnDiscard" />
+                <Button x:Name="SaveButton" Content="Save" Width="80" Click="OnSave" />
+            </StackPanel>
+        </Border>
+        <Border Background="#222222" Margin="8">
+            <Canvas x:Name="DesignCanvas" Background="#222222" ClipToBounds="True" />
+        </Border>
+    </DockPanel>
+</Window>

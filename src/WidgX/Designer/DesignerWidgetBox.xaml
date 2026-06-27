@@ -1,0 +1,12 @@
+<UserControl x:Class="WidgX.Designer.DesignerWidgetBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border x:Name="OuterBorder" BorderBrush="Cyan" BorderThickness="1" Background="Transparent">
+        <Grid>
+            <ContentPresenter x:Name="WidgetContent" />
+            <Thumb x:Name="ResizeThumb" Width="12" Height="12"
+                   HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                   Background="Cyan" Cursor="SizeNWSE" />
+        </Grid>
+    </Border>
+</UserControl>
