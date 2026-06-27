@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Windows;
+using Point = System.Windows.Point;
 
 namespace WidgX.Native;
 

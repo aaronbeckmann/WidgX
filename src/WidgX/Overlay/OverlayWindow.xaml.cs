@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Interop;
+using Point = System.Windows.Point;
 using WidgX.Native;
 
 namespace WidgX.Overlay;
