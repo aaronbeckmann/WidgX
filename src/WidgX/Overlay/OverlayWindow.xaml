@@ -7,5 +7,5 @@
         ShowInTaskbar="False"
         ResizeMode="NoResize"
         Topmost="False">
-    <Grid x:Name="RootGrid" Background="Transparent" />
+    <Canvas x:Name="RootCanvas" Background="Transparent" />
 </Window>

@@ -26,6 +26,7 @@ public partial class App : Application
 
         _overlayWindow = new OverlayWindow(selectedScreen.BoundsDip);
         _overlayWindow.Show();
+        _overlayWindow.ReloadLayout(layout);
 
         _trayIconManager = new TrayIconManager(
             onEditLayout: () => { /* wired in Phase 2 */ },

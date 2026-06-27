@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Interop;
 using Point = System.Windows.Point;
+using WidgX.Models;
 using WidgX.Native;
 
 namespace WidgX.Overlay;
@@ -11,6 +12,7 @@ public partial class OverlayWindow : Window
 {
     private List<Rect> _widgetBounds = new();
     private HwndSource? _hwndSource;
+    private readonly WidgetHost _widgetHost = new();
 
     public OverlayWindow(Rect screenBoundsDip)
     {
@@ -27,6 +29,12 @@ public partial class OverlayWindow : Window
     public void SetWidgetBounds(IEnumerable<Rect> bounds)
     {
         _widgetBounds = new List<Rect>(bounds);
+    }
+
+    public void ReloadLayout(Layout layout)
+    {
+        var bounds = _widgetHost.LoadLayout(layout, RootCanvas);
+        SetWidgetBounds(bounds);
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
