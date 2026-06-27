@@ -1,14 +1,43 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using WidgX.Overlay;
+using WidgX.Persistence;
+using WidgX.Tray;
 using Application = System.Windows.Application;
 
 namespace WidgX;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application
 {
+    private OverlayWindow? _overlayWindow;
+    private TrayIconManager? _trayIconManager;
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
+        var screens = ScreenResolver.GetAllScreens();
+        var selectedScreen = ScreenResolver.ResolveSelected(layout.SelectedScreenId, screens);
+
+        _overlayWindow = new OverlayWindow(selectedScreen.BoundsDip);
+        _overlayWindow.Show();
+
+        _trayIconManager = new TrayIconManager(
+            onEditLayout: () => { /* wired in Phase 2 */ },
+            onToggleVisibility: () =>
+            {
+                if (_overlayWindow.IsVisible) _overlayWindow.Hide();
+                else _overlayWindow.Show();
+            },
+            onExit: () => Shutdown());
+
+        _trayIconManager.Show();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        _trayIconManager?.Dispose();
+        base.OnExit(e);
+    }
 }
 
