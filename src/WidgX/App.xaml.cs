@@ -2,6 +2,7 @@
 using WidgX.Overlay;
 using WidgX.Persistence;
 using WidgX.Tray;
+using WidgX.Widgets.Clock;
 using Application = System.Windows.Application;
 
 namespace WidgX;
@@ -14,6 +15,8 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        ClockWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();
