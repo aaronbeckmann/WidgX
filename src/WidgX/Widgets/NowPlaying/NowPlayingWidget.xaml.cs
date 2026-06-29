@@ -22,6 +22,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
     private bool _spinCover = true;
     private bool _spinning;
     private string? _lastTrackKey;
+    private int _emptyReads;
 
     public NowPlayingWidget()
     {
@@ -66,11 +67,26 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
     private async Task Refresh()
     {
         var info = await _service.GetNowPlayingAsync();
-        NowPlayingText.Text = MediaSessionService.FormatNowPlaying(info.Title, info.Artist);
-
         var hasTrack = !string.IsNullOrWhiteSpace(info.Title);
 
-        if (hasTrack && info.Duration > TimeSpan.Zero)
+        if (!hasTrack)
+        {
+            // The SMTC session can briefly drop out between polls; tolerate a few
+            // empty reads before tearing down so the cover doesn't stutter.
+            if (++_emptyReads < 3) return;
+
+            NowPlayingText.Text = MediaSessionService.FormatNowPlaying(null, null);
+            TrackProgress.Visibility = Visibility.Collapsed;
+            CoverHost.Visibility = Visibility.Collapsed;
+            _lastTrackKey = null;
+            UpdateSpin(false);
+            return;
+        }
+
+        _emptyReads = 0;
+        NowPlayingText.Text = MediaSessionService.FormatNowPlaying(info.Title, info.Artist);
+
+        if (info.Duration > TimeSpan.Zero)
         {
             TrackProgress.Value = MediaProgress.Fraction(info.Position, info.Duration);
             TrackProgress.Visibility = Visibility.Visible;
@@ -80,7 +96,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             TrackProgress.Visibility = Visibility.Collapsed;
         }
 
-        if (_showCover && hasTrack)
+        if (_showCover)
         {
             var key = $"{info.Title}|{info.Artist}";
             if (key != _lastTrackKey)
@@ -97,7 +113,10 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             _lastTrackKey = null;
         }
 
-        UpdateSpin(hasTrack && _showCover && _spinCover && CoverHost.Visibility == Visibility.Visible);
+        // Spin only while actually playing, and never tear the animation down for
+        // a transient read (handled by the hysteresis above).
+        UpdateSpin(_showCover && _spinCover && info.IsPlaying
+                   && CoverHost.Visibility == Visibility.Visible);
     }
 
     private void UpdateSpin(bool shouldSpin)

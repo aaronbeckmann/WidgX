@@ -95,10 +95,13 @@ public partial class DesignerWindow : Window
 
     private void RebuildCanvas()
     {
-        // Size the canvas to the selected monitor's true pixel resolution so the
-        // surrounding Viewbox renders the layout to scale.
-        DesignCanvas.Width = _selectedScreen.Bounds.Width;
-        DesignCanvas.Height = _selectedScreen.Bounds.Height;
+        // Widget coordinates are in WPF device-independent units (DIPs), so the
+        // canvas must be sized in DIPs (physical pixels / DPI scale) to match —
+        // otherwise at non-100% scaling the canvas wouldn't represent the screen.
+        // The label still shows the familiar physical resolution.
+        var scale = MonitorScale.GetScaleFactor(_selectedScreen.Bounds);
+        DesignCanvas.Width = _selectedScreen.Bounds.Width / scale;
+        DesignCanvas.Height = _selectedScreen.Bounds.Height / scale;
         CanvasResolutionLabel.Text = $"{(int)_selectedScreen.Bounds.Width} × {(int)_selectedScreen.Bounds.Height}";
 
         DesignCanvas.Children.Clear();

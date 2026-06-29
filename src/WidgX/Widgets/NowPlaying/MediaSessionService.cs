@@ -14,6 +14,7 @@ public class NowPlayingInfo
     public string? Artist { get; init; }
     public TimeSpan Position { get; init; }
     public TimeSpan Duration { get; init; }
+    public bool IsPlaying { get; init; }
     public IRandomAccessStreamReference? Thumbnail { get; init; }
 }
 
@@ -42,8 +43,11 @@ public class MediaSessionService
 
             var props = await session.TryGetMediaPropertiesAsync();
             var timeline = session.GetTimelineProperties();
+            var playback = session.GetPlaybackInfo();
 
             var duration = timeline != null ? timeline.EndTime - timeline.StartTime : TimeSpan.Zero;
+            var isPlaying = playback?.PlaybackStatus
+                == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
 
             return new NowPlayingInfo
             {
@@ -51,6 +55,7 @@ public class MediaSessionService
                 Artist = props?.Artist,
                 Position = timeline?.Position ?? TimeSpan.Zero,
                 Duration = duration,
+                IsPlaying = isPlaying,
                 Thumbnail = props?.Thumbnail
             };
         }
