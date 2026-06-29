@@ -16,12 +16,14 @@ namespace WidgX;
 
 public partial class App : Application
 {
+    private bool _isBackgroundLaunch;
     private OverlayWindow? _overlayWindow;
     private TrayIconManager? _trayIconManager;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+        _isBackgroundLaunch = WidgX.Startup.LaunchArgs.IsBackgroundLaunch(e.Args);
 
         ClockWidgetRegistration.Register();
         CalendarWidgetRegistration.Register();
