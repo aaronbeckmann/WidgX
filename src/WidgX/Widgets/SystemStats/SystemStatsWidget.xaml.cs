@@ -40,15 +40,15 @@ public partial class SystemStatsWidget : System.Windows.Controls.UserControl, IW
     {
         try
         {
-            CpuText.Text = $"CPU: {_service.GetCpuUsagePercent():0}%";
-            RamText.Text = $"RAM: {_service.GetRamUsagePercent():0}%";
-            GpuText.Text = $"GPU: {_service.GetGpuUsagePercent():0}%";
+            CpuGauge.Value = _service.GetCpuUsagePercent();
+            RamGauge.Value = _service.GetRamUsagePercent();
+            GpuGauge.Value = _service.GetGpuUsagePercent();
         }
         catch (Exception)
         {
-            CpuText.Text = "CPU: Unavailable";
-            RamText.Text = "RAM: Unavailable";
-            GpuText.Text = "GPU: Unavailable";
+            CpuGauge.Value = 0;
+            RamGauge.Value = 0;
+            GpuGauge.Value = 0;
         }
     }
 }

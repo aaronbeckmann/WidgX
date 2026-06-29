@@ -1,11 +1,12 @@
 <UserControl x:Class="WidgX.Widgets.SystemStats.SystemStatsWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrl="clr-namespace:WidgX.Controls">
     <Border Style="{StaticResource WidgetCardStyle}">
-        <StackPanel>
-            <TextBlock x:Name="CpuText" Foreground="White" />
-            <TextBlock x:Name="RamText" Foreground="White" />
-            <TextBlock x:Name="GpuText" Foreground="White" />
+        <StackPanel Orientation="Horizontal">
+            <ctrl:RadialGauge x:Name="CpuGauge" Label="CPU" Width="64" Height="64" Margin="4" Accent="#4FC3F7" />
+            <ctrl:RadialGauge x:Name="RamGauge" Label="RAM" Width="64" Height="64" Margin="4" Accent="#81C784" />
+            <ctrl:RadialGauge x:Name="GpuGauge" Label="GPU" Width="64" Height="64" Margin="4" Accent="#BA68C8" />
         </StackPanel>
     </Border>
 </UserControl>
