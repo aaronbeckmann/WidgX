@@ -127,6 +127,13 @@ public partial class DesignerWindow : Window
         AddBoxForInstance(instance);
     }
 
+    private void OnApply(object sender, RoutedEventArgs e)
+    {
+        // Persist the working layout and live-update the overlay, but keep the
+        // Designer window open so the user can continue editing.
+        _onSaved(_workingLayout);
+    }
+
     private void OnSave(object sender, RoutedEventArgs e)
     {
         _onSaved(_workingLayout);

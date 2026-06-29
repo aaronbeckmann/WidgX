@@ -12,6 +12,7 @@
         <Border DockPanel.Dock="Bottom" Padding="8" Background="#EEEEEE">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="DiscardButton" Content="Discard" Width="80" Margin="0,0,8,0" Click="OnDiscard" />
+                <Button x:Name="ApplyButton" Content="Apply" Width="80" Margin="0,0,8,0" Click="OnApply" />
                 <Button x:Name="SaveButton" Content="Save" Width="80" Click="OnSave" />
             </StackPanel>
         </Border>
