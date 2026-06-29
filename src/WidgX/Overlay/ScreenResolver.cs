@@ -9,7 +9,7 @@ public class ScreenInfo
 {
     public string Id { get; set; } = string.Empty;
     public string FriendlyName { get; set; } = string.Empty;
-    public Rect BoundsDip { get; set; }
+    public Rect Bounds { get; set; }
     public bool IsPrimary { get; set; }
 }
 
@@ -21,7 +21,7 @@ public static class ScreenResolver
         {
             Id = screen.DeviceName,
             FriendlyName = screen.DeviceName,
-            BoundsDip = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
+            Bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
             IsPrimary = screen.Primary
         }).ToList();
     }

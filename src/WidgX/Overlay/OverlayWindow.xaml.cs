@@ -13,15 +13,17 @@ public partial class OverlayWindow : Window
     private List<Rect> _widgetBounds = new();
     private HwndSource? _hwndSource;
     private readonly WidgetHost _widgetHost = new();
+    private readonly Rect _screenBounds;
 
-    public OverlayWindow(Rect screenBoundsDip)
+    public OverlayWindow(Rect screenBounds)
     {
         InitializeComponent();
+        _screenBounds = screenBounds;
 
-        Left = screenBoundsDip.X;
-        Top = screenBoundsDip.Y;
-        Width = screenBoundsDip.Width;
-        Height = screenBoundsDip.Height;
+        Left = screenBounds.X;
+        Top = screenBounds.Y;
+        Width = screenBounds.Width;
+        Height = screenBounds.Height;
 
         SourceInitialized += OnSourceInitialized;
     }
@@ -44,6 +46,15 @@ public partial class OverlayWindow : Window
         _hwndSource?.AddHook(WndProc);
 
         DesktopLayerHelper.SendToDesktopLayer(hwnd);
+
+        // Place the overlay using physical pixel bounds (DPI-independent). After
+        // PerMonitorV2 + WorkerW reparenting, child coords are virtual-screen
+        // physical pixels, matching Screen.Bounds.
+        NativeMethods.SetWindowPos(
+            hwnd, IntPtr.Zero,
+            (int)_screenBounds.X, (int)_screenBounds.Y,
+            (int)_screenBounds.Width, (int)_screenBounds.Height,
+            NativeMethods.SWP_NOZORDER | NativeMethods.SWP_NOACTIVATE);
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)

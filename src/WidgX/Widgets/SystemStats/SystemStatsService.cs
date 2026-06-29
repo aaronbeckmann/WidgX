@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 namespace WidgX.Widgets.SystemStats;
 
-public class SystemStatsService
+public class SystemStatsService : IDisposable
 {
     private PerformanceCounter? _cpuCounter;
 
@@ -49,9 +50,12 @@ public class SystemStatsService
             {
                 foreach (var counter in category.GetCounters(instanceName))
                 {
-                    if (counter.CounterName == "Utilization Percentage")
+                    using (counter)
                     {
-                        values.Add(counter.NextValue());
+                        if (counter.CounterName == "Utilization Percentage")
+                        {
+                            values.Add(counter.NextValue());
+                        }
                     }
                 }
             }
@@ -62,5 +66,11 @@ public class SystemStatsService
         {
             return 0;
         }
+    }
+
+    public void Dispose()
+    {
+        _cpuCounter?.Dispose();
+        _cpuCounter = null;
     }
 }

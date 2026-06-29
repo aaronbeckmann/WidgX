@@ -37,7 +37,7 @@ public partial class App : Application
         var screens = ScreenResolver.GetAllScreens();
         var selectedScreen = ScreenResolver.ResolveSelected(layout.SelectedScreenId, screens);
 
-        _overlayWindow = new OverlayWindow(selectedScreen.BoundsDip);
+        _overlayWindow = new OverlayWindow(selectedScreen.Bounds);
         _overlayWindow.Show();
         _overlayWindow.ReloadLayout(layout);
 

@@ -30,7 +30,11 @@ public partial class SystemStatsWidget : System.Windows.Controls.UserControl, IW
 
     public void StartUpdates() => _timer.Start();
 
-    public void StopUpdates() => _timer.Stop();
+    public void StopUpdates()
+    {
+        _timer.Stop();
+        _service.Dispose();
+    }
 
     private void Refresh()
     {

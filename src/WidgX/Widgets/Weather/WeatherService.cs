@@ -7,11 +7,12 @@ namespace WidgX.Widgets.Weather;
 
 public class WeatherService
 {
+    private static readonly HttpClient SharedClient = new();
     private readonly HttpClient _httpClient;
 
     public WeatherService(HttpClient? httpClient = null)
     {
-        _httpClient = httpClient ?? new HttpClient();
+        _httpClient = httpClient ?? SharedClient;
     }
 
     public async Task<(double Latitude, double Longitude)?> GeocodeAsync(string locationName)

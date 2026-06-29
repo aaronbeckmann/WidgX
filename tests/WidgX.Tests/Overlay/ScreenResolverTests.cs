@@ -9,8 +9,8 @@ public class ScreenResolverTests
 {
     private static List<ScreenInfo> TwoScreens() => new()
     {
-        new ScreenInfo { Id = "DISPLAY1", FriendlyName = "Primary", BoundsDip = new Rect(0, 0, 1920, 1080), IsPrimary = true },
-        new ScreenInfo { Id = "DISPLAY2", FriendlyName = "Secondary", BoundsDip = new Rect(1920, 0, 1920, 1080), IsPrimary = false }
+        new ScreenInfo { Id = "DISPLAY1", FriendlyName = "Primary", Bounds = new Rect(0, 0, 1920, 1080), IsPrimary = true },
+        new ScreenInfo { Id = "DISPLAY2", FriendlyName = "Secondary", Bounds = new Rect(1920, 0, 1920, 1080), IsPrimary = false }
     };
 
     [Fact]
