@@ -5,6 +5,7 @@ using WidgX.Persistence;
 using WidgX.Tray;
 using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
+using WidgX.Widgets.NowPlaying;
 using WidgX.Widgets.SystemStats;
 using WidgX.Widgets.Todos;
 using WidgX.Widgets.Uptime;
@@ -26,6 +27,7 @@ public partial class App : Application
         TodoWidgetRegistration.Register();
         UptimeWidgetRegistration.Register();
         SystemStatsWidgetRegistration.Register();
+        NowPlayingWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();
