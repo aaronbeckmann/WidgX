@@ -1,7 +1,7 @@
 <UserControl x:Class="WidgX.Widgets.NowPlaying.NowPlayingWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Background="#80000000" CornerRadius="6" Padding="10">
+    <Border Style="{StaticResource WidgetCardStyle}">
         <TextBlock x:Name="NowPlayingText" Foreground="White" TextWrapping="Wrap" />
     </Border>
 </UserControl>
