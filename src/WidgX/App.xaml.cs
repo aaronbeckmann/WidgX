@@ -9,6 +9,7 @@ using WidgX.Widgets.NowPlaying;
 using WidgX.Widgets.SystemStats;
 using WidgX.Widgets.Todos;
 using WidgX.Widgets.Uptime;
+using WidgX.Widgets.Weather;
 using Application = System.Windows.Application;
 
 namespace WidgX;
@@ -28,6 +29,7 @@ public partial class App : Application
         UptimeWidgetRegistration.Register();
         SystemStatsWidgetRegistration.Register();
         NowPlayingWidgetRegistration.Register();
+        WeatherWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();

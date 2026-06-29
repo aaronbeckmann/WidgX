@@ -15,34 +15,47 @@
                 <Button x:Name="SaveButton" Content="Save" Width="80" Click="OnSave" />
             </StackPanel>
         </Border>
-        <Grid Margin="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="160" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="220" />
-            </Grid.ColumnDefinitions>
+        <TabControl>
+            <TabItem Header="Layout">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="220" />
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                <TextBlock Text="Widgets" FontWeight="Bold" Margin="0,0,0,6" />
-                <ListBox x:Name="WidgetPalette" DisplayMemberPath="DisplayName" />
-                <Button x:Name="AddWidgetButton" Content="Add to canvas" Margin="0,6,0,0" Click="OnAddWidget" />
-            </StackPanel>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Widgets" FontWeight="Bold" Margin="0,0,0,6" />
+                        <ListBox x:Name="WidgetPalette" DisplayMemberPath="DisplayName" />
+                        <Button x:Name="AddWidgetButton" Content="Add to canvas" Margin="0,6,0,0" Click="OnAddWidget" />
+                    </StackPanel>
 
-            <Border Grid.Column="1" Background="#222222">
-                <Canvas x:Name="DesignCanvas" Background="#222222" ClipToBounds="True" />
-            </Border>
+                    <Border Grid.Column="1" Background="#222222">
+                        <Canvas x:Name="DesignCanvas" Background="#222222" ClipToBounds="True" />
+                    </Border>
 
-            <StackPanel Grid.Column="2" Margin="8,0,0,0" x:Name="PropertiesPanel" IsEnabled="False">
-                <TextBlock Text="Properties" FontWeight="Bold" Margin="0,0,0,6" />
-                <TextBlock Text="X" /><TextBox x:Name="XBox" />
-                <TextBlock Text="Y" Margin="0,6,0,0" /><TextBox x:Name="YBox" />
-                <TextBlock Text="Width" Margin="0,6,0,0" /><TextBox x:Name="WidthBox" />
-                <TextBlock Text="Height" Margin="0,6,0,0" /><TextBox x:Name="HeightBox" />
-                <TextBlock Text="Opacity (0-1)" Margin="0,6,0,0" /><TextBox x:Name="OpacityBox" />
-                <TextBlock Text="Accent Color (hex)" Margin="0,6,0,0" /><TextBox x:Name="AccentColorBox" />
-                <TextBlock Text="Font Size" Margin="0,6,0,0" /><TextBox x:Name="FontSizeBox" />
-                <Button x:Name="ApplyPropertiesButton" Content="Apply" Margin="0,10,0,0" Click="OnApplyProperties" />
-            </StackPanel>
-        </Grid>
+                    <StackPanel Grid.Column="2" Margin="8,0,0,0" x:Name="PropertiesPanel" IsEnabled="False">
+                        <TextBlock Text="Properties" FontWeight="Bold" Margin="0,0,0,6" />
+                        <TextBlock Text="X" /><TextBox x:Name="XBox" />
+                        <TextBlock Text="Y" Margin="0,6,0,0" /><TextBox x:Name="YBox" />
+                        <TextBlock Text="Width" Margin="0,6,0,0" /><TextBox x:Name="WidthBox" />
+                        <TextBlock Text="Height" Margin="0,6,0,0" /><TextBox x:Name="HeightBox" />
+                        <TextBlock Text="Opacity (0-1)" Margin="0,6,0,0" /><TextBox x:Name="OpacityBox" />
+                        <TextBlock Text="Accent Color (hex)" Margin="0,6,0,0" /><TextBox x:Name="AccentColorBox" />
+                        <TextBlock Text="Font Size" Margin="0,6,0,0" /><TextBox x:Name="FontSizeBox" />
+                        <Button x:Name="ApplyPropertiesButton" Content="Apply" Margin="0,10,0,0" Click="OnApplyProperties" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Settings">
+                <StackPanel Margin="16">
+                    <TextBlock Text="Weather location (city name)" FontWeight="Bold" />
+                    <TextBox x:Name="WeatherLocationBox" Width="220" Margin="0,4,0,12" />
+                    <Button x:Name="SaveLocationButton" Content="Save location" Width="120" Click="OnSaveLocation" HorizontalAlignment="Left" Margin="0,0,0,16" />
+
+                    <CheckBox x:Name="AutostartCheckBox" Content="Run WidgX when Windows starts" Checked="OnAutostartChanged" Unchecked="OnAutostartChanged" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
     </DockPanel>
 </Window>

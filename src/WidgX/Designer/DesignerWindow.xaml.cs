@@ -41,6 +41,10 @@ public partial class DesignerWindow : Window
 
         WidgetPalette.ItemsSource = WidgetRegistry.All;
 
+        var settings = Persistence.SettingsStore.Load(Persistence.AppPaths.SettingsFilePath);
+        WeatherLocationBox.Text = settings.WeatherLocationName;
+        AutostartCheckBox.IsChecked = Startup.AutostartManager.IsEnabled();
+
         RebuildCanvas();
     }
 
@@ -132,5 +136,28 @@ public partial class DesignerWindow : Window
     private void OnDiscard(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private async void OnSaveLocation(object sender, RoutedEventArgs e)
+    {
+        var locationName = WeatherLocationBox.Text;
+        if (string.IsNullOrWhiteSpace(locationName)) return;
+
+        var weatherService = new Widgets.Weather.WeatherService();
+        var coords = await weatherService.GeocodeAsync(locationName);
+
+        var settings = Persistence.SettingsStore.Load(Persistence.AppPaths.SettingsFilePath);
+        settings.WeatherLocationName = locationName;
+        if (coords != null)
+        {
+            settings.WeatherLatitude = coords.Value.Latitude;
+            settings.WeatherLongitude = coords.Value.Longitude;
+        }
+        Persistence.SettingsStore.Save(Persistence.AppPaths.SettingsFilePath, settings);
+    }
+
+    private void OnAutostartChanged(object sender, RoutedEventArgs e)
+    {
+        Startup.AutostartManager.SetEnabled(AutostartCheckBox.IsChecked == true);
     }
 }
