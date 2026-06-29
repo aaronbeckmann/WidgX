@@ -2,9 +2,13 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using WidgX.Controls;
 using WidgX.Models;
 using WidgX.Overlay;
 using WidgX.Widgets;
+using Color = System.Windows.Media.Color;
+using SolidColorBrush = System.Windows.Media.SolidColorBrush;
+using Cursors = System.Windows.Input.Cursors;
 
 namespace WidgX.Designer;
 
@@ -14,6 +18,13 @@ public partial class DesignerWindow : Window
     private readonly Action<Layout> _onSaved;
     private ScreenInfo _selectedScreen;
     private WidgetInstance? _selectedInstance;
+    private bool _suppressColorSync;
+
+    private static readonly string[] SwatchColors =
+    {
+        "#FFFFFF", "#4FC3F7", "#81C784", "#BA68C8", "#FFB74D", "#E57373",
+        "#64B5F6", "#FFD54F", "#4DB6AC", "#F06292", "#A1887F", "#90A4AE"
+    };
 
     public DesignerWindow(Layout initialLayout, Action<Layout> onSaved)
     {
@@ -45,7 +56,31 @@ public partial class DesignerWindow : Window
         WeatherLocationBox.Text = settings.WeatherLocationName;
         AutostartCheckBox.IsChecked = Startup.AutostartManager.IsEnabled();
 
+        BuildSwatches();
         RebuildCanvas();
+    }
+
+    private void BuildSwatches()
+    {
+        foreach (var hex in SwatchColors)
+        {
+            if (!ColorHex.TryParseRgb(hex, out var r, out var g, out var b)) continue;
+
+            var swatch = new Border
+            {
+                Width = 22,
+                Height = 22,
+                Margin = new Thickness(0, 0, 6, 6),
+                CornerRadius = new CornerRadius(4),
+                Background = new SolidColorBrush(Color.FromRgb(r, g, b)),
+                BorderBrush = (System.Windows.Media.Brush)FindResource("ControlBorderBrush"),
+                BorderThickness = new Thickness(1),
+                Cursor = Cursors.Hand,
+                ToolTip = hex
+            };
+            swatch.MouseLeftButtonUp += (_, _) => AccentColorBox.Text = hex;
+            SwatchPanel.Children.Add(swatch);
+        }
     }
 
     private void OnScreenChanged(object sender, SelectionChangedEventArgs e)
@@ -119,6 +154,38 @@ public partial class DesignerWindow : Window
 
         RebuildCanvas();
     }
+
+    private void OnAccentHexChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_suppressColorSync) return;
+        if (!ColorHex.TryParseRgb(AccentColorBox.Text, out var r, out var g, out var b)) return;
+
+        _suppressColorSync = true;
+        RSlider.Value = r;
+        GSlider.Value = g;
+        BSlider.Value = b;
+        _suppressColorSync = false;
+
+        UpdateAccentPreview(r, g, b);
+    }
+
+    private void OnRgbSliderChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_suppressColorSync) return;
+
+        var r = (byte)RSlider.Value;
+        var g = (byte)GSlider.Value;
+        var b = (byte)BSlider.Value;
+
+        _suppressColorSync = true;
+        AccentColorBox.Text = ColorHex.Format(r, g, b);
+        _suppressColorSync = false;
+
+        UpdateAccentPreview(r, g, b);
+    }
+
+    private void UpdateAccentPreview(byte r, byte g, byte b)
+        => AccentPreview.Background = new SolidColorBrush(Color.FromRgb(r, g, b));
 
     private void OnAddWidget(object sender, RoutedEventArgs e)
     {

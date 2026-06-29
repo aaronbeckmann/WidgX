@@ -62,7 +62,26 @@
                         <TextBlock Text="Width" Margin="0,6,0,0" /><TextBox x:Name="WidthBox" />
                         <TextBlock Text="Height" Margin="0,6,0,0" /><TextBox x:Name="HeightBox" />
                         <TextBlock Text="Opacity (0-1)" Margin="0,6,0,0" /><TextBox x:Name="OpacityBox" />
-                        <TextBlock Text="Accent Color (hex)" Margin="0,6,0,0" /><TextBox x:Name="AccentColorBox" />
+                        <TextBlock Text="Accent Color" Margin="0,6,0,0" />
+                        <Border x:Name="AccentPreview" Height="22" CornerRadius="4" Margin="0,4,0,4"
+                                BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" />
+                        <TextBox x:Name="AccentColorBox" TextChanged="OnAccentHexChanged" />
+                        <DockPanel Margin="0,6,0,0">
+                            <TextBlock Text="R" Width="14" VerticalAlignment="Center" DockPanel.Dock="Left" />
+                            <Slider x:Name="RSlider" Minimum="0" Maximum="255" SmallChange="1"
+                                    ValueChanged="OnRgbSliderChanged" />
+                        </DockPanel>
+                        <DockPanel Margin="0,4,0,0">
+                            <TextBlock Text="G" Width="14" VerticalAlignment="Center" DockPanel.Dock="Left" />
+                            <Slider x:Name="GSlider" Minimum="0" Maximum="255" SmallChange="1"
+                                    ValueChanged="OnRgbSliderChanged" />
+                        </DockPanel>
+                        <DockPanel Margin="0,4,0,0">
+                            <TextBlock Text="B" Width="14" VerticalAlignment="Center" DockPanel.Dock="Left" />
+                            <Slider x:Name="BSlider" Minimum="0" Maximum="255" SmallChange="1"
+                                    ValueChanged="OnRgbSliderChanged" />
+                        </DockPanel>
+                        <WrapPanel x:Name="SwatchPanel" Margin="0,8,0,0" />
                         <TextBlock Text="Font Size" Margin="0,6,0,0" /><TextBox x:Name="FontSizeBox" />
                         <Button x:Name="ApplyPropertiesButton" Content="Apply" Margin="0,10,0,0" Click="OnApplyProperties" />
                     </StackPanel>
