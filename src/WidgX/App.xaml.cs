@@ -57,6 +57,15 @@ public partial class App : Application
             },
             onExit: () => Shutdown());
 
+        if (!string.IsNullOrEmpty(layout.SelectedScreenId) && selectedScreen.Id != layout.SelectedScreenId)
+        {
+            _trayIconManager.SetTooltip($"WidgX (fallback: {layout.SelectedScreenId} disconnected, using {selectedScreen.FriendlyName})");
+        }
+        else
+        {
+            _trayIconManager.SetTooltip("WidgX");
+        }
+
         _trayIconManager.Show();
     }
 
