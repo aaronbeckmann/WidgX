@@ -5,6 +5,7 @@ using WidgX.Persistence;
 using WidgX.Tray;
 using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
+using WidgX.Widgets.Todos;
 using Application = System.Windows.Application;
 
 namespace WidgX;
@@ -20,6 +21,7 @@ public partial class App : Application
 
         ClockWidgetRegistration.Register();
         CalendarWidgetRegistration.Register();
+        TodoWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();
