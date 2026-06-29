@@ -33,9 +33,27 @@
                         <Button x:Name="AddWidgetButton" Content="Add to canvas" Margin="0,6,0,0" Click="OnAddWidget" />
                     </StackPanel>
 
-                    <Border Grid.Column="1" Background="{StaticResource DesignerCanvasBrush}" CornerRadius="6">
-                        <Canvas x:Name="DesignCanvas" Background="{StaticResource DesignerCanvasBrush}" ClipToBounds="True" />
-                    </Border>
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Name="CanvasResolutionLabel" Grid.Row="0"
+                                   HorizontalAlignment="Center" Margin="0,0,0,6"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <!-- The canvas is sized to the monitor's true pixel resolution; the
+                             Viewbox scales it to fit so the layout is shown to scale (WYSIWYG).
+                             Widget coordinates stay in monitor pixels. -->
+                        <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Border x:Name="MonitorBezel" Background="{StaticResource DesignerCanvasBrush}"
+                                    CornerRadius="6" BorderBrush="{StaticResource ControlBorderBrush}"
+                                    BorderThickness="2">
+                                <Canvas x:Name="DesignCanvas" Background="{StaticResource DesignerCanvasBrush}"
+                                        ClipToBounds="True" />
+                            </Border>
+                        </Viewbox>
+                    </Grid>
 
                     <StackPanel Grid.Column="2" Margin="8,0,0,0" x:Name="PropertiesPanel" IsEnabled="False">
                         <TextBlock Text="Properties" FontWeight="Bold" Margin="0,0,0,6" />

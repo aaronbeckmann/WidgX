@@ -60,6 +60,12 @@ public partial class DesignerWindow : Window
 
     private void RebuildCanvas()
     {
+        // Size the canvas to the selected monitor's true pixel resolution so the
+        // surrounding Viewbox renders the layout to scale.
+        DesignCanvas.Width = _selectedScreen.Bounds.Width;
+        DesignCanvas.Height = _selectedScreen.Bounds.Height;
+        CanvasResolutionLabel.Text = $"{(int)_selectedScreen.Bounds.Width} × {(int)_selectedScreen.Bounds.Height}";
+
         DesignCanvas.Children.Clear();
 
         foreach (var instance in _workingLayout.Widgets)
