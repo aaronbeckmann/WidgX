@@ -17,12 +17,22 @@ public static class ScreenResolver
 {
     public static List<ScreenInfo> GetAllScreens()
     {
-        return Screen.AllScreens.Select(screen => new ScreenInfo
+        var friendlyNames = MonitorNameResolver.GetFriendlyNames();
+
+        return Screen.AllScreens.Select(screen =>
         {
-            Id = screen.DeviceName,
-            FriendlyName = screen.DeviceName,
-            Bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height),
-            IsPrimary = screen.Primary
+            var bounds = new Rect(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
+            var name = friendlyNames.TryGetValue(screen.DeviceName, out var friendly) && !string.IsNullOrWhiteSpace(friendly)
+                ? friendly
+                : screen.DeviceName;
+
+            return new ScreenInfo
+            {
+                Id = screen.DeviceName,
+                FriendlyName = MonitorNameResolver.FormatLabel(name, bounds, screen.Primary),
+                Bounds = bounds,
+                IsPrimary = screen.Primary
+            };
         }).ToList();
     }
 
