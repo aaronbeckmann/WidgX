@@ -1,7 +1,21 @@
+using System;
 using System.Threading.Tasks;
 using Windows.Media.Control;
+using Windows.Storage.Streams;
 
 namespace WidgX.Widgets.NowPlaying;
+
+/// <summary>
+/// Snapshot of the current media session, including timeline and cover art.
+/// </summary>
+public class NowPlayingInfo
+{
+    public string? Title { get; init; }
+    public string? Artist { get; init; }
+    public TimeSpan Position { get; init; }
+    public TimeSpan Duration { get; init; }
+    public IRandomAccessStreamReference? Thumbnail { get; init; }
+}
 
 public class MediaSessionService
 {
@@ -15,7 +29,7 @@ public class MediaSessionService
         return string.IsNullOrWhiteSpace(artist) ? title : $"{title} — {artist}";
     }
 
-    public async Task<(string? Title, string? Artist)> GetCurrentTrackAsync()
+    public async Task<NowPlayingInfo> GetNowPlayingAsync()
     {
         try
         {
@@ -23,15 +37,26 @@ public class MediaSessionService
             var session = manager.GetCurrentSession();
             if (session == null)
             {
-                return (null, null);
+                return new NowPlayingInfo();
             }
 
             var props = await session.TryGetMediaPropertiesAsync();
-            return (props?.Title, props?.Artist);
+            var timeline = session.GetTimelineProperties();
+
+            var duration = timeline != null ? timeline.EndTime - timeline.StartTime : TimeSpan.Zero;
+
+            return new NowPlayingInfo
+            {
+                Title = props?.Title,
+                Artist = props?.Artist,
+                Position = timeline?.Position ?? TimeSpan.Zero,
+                Duration = duration,
+                Thumbnail = props?.Thumbnail
+            };
         }
-        catch (System.Exception)
+        catch (Exception)
         {
-            return (null, null);
+            return new NowPlayingInfo();
         }
     }
 }

@@ -12,11 +12,16 @@ public static class NowPlayingWidgetRegistration
             CreateDefaultInstance = () => new Models.WidgetInstance
             {
                 WidgetType = "NowPlaying",
-                Width = 240,
-                Height = 70,
+                Width = 260,
+                Height = 80,
                 Opacity = 0.9,
                 AccentColorHex = "#FFFFFF",
-                FontSize = 13
+                FontSize = 13,
+                Settings = new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["showCover"] = "true",
+                    ["spinCover"] = "true"
+                }
             }
         });
     }

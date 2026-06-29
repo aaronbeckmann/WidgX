@@ -1,6 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Windows.Storage.Streams;
 using WidgX.Models;
 
 namespace WidgX.Widgets.NowPlaying;
@@ -10,10 +18,15 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
     private readonly DispatcherTimer _timer;
     private readonly MediaSessionService _service = new();
 
+    private bool _showCover = true;
+    private bool _spinCover = true;
+    private bool _spinning;
+    private string? _lastTrackKey;
+
     public NowPlayingWidget()
     {
         InitializeComponent();
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _timer.Tick += async (_, _) => await Refresh();
     }
 
@@ -25,16 +38,113 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         Height = config.Height;
         Opacity = config.Opacity;
         FontSize = config.FontSize;
+
+        _showCover = ReadBool(config.Settings, "showCover", true);
+        _spinCover = ReadBool(config.Settings, "spinCover", true);
+        _lastTrackKey = null; // force the cover to reload on the next refresh
+
         _ = Refresh();
     }
 
     public void StartUpdates() => _timer.Start();
 
-    public void StopUpdates() => _timer.Stop();
-
-    private async System.Threading.Tasks.Task Refresh()
+    public void StopUpdates()
     {
-        var (title, artist) = await _service.GetCurrentTrackAsync();
-        NowPlayingText.Text = MediaSessionService.FormatNowPlaying(title, artist);
+        _timer.Stop();
+        UpdateSpin(false);
+    }
+
+    private static bool ReadBool(IDictionary<string, string> settings, string key, bool fallback)
+    {
+        if (settings.TryGetValue(key, out var raw) && bool.TryParse(raw, out var value))
+        {
+            return value;
+        }
+        return fallback;
+    }
+
+    private async Task Refresh()
+    {
+        var info = await _service.GetNowPlayingAsync();
+        NowPlayingText.Text = MediaSessionService.FormatNowPlaying(info.Title, info.Artist);
+
+        var hasTrack = !string.IsNullOrWhiteSpace(info.Title);
+
+        if (hasTrack && info.Duration > TimeSpan.Zero)
+        {
+            TrackProgress.Value = MediaProgress.Fraction(info.Position, info.Duration);
+            TrackProgress.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            TrackProgress.Visibility = Visibility.Collapsed;
+        }
+
+        if (_showCover && hasTrack)
+        {
+            var key = $"{info.Title}|{info.Artist}";
+            if (key != _lastTrackKey)
+            {
+                _lastTrackKey = key;
+                var bmp = await LoadThumbnailAsync(info.Thumbnail);
+                CoverImage.Source = bmp;
+                CoverHost.Visibility = bmp != null ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        else
+        {
+            CoverHost.Visibility = Visibility.Collapsed;
+            _lastTrackKey = null;
+        }
+
+        UpdateSpin(hasTrack && _showCover && _spinCover && CoverHost.Visibility == Visibility.Visible);
+    }
+
+    private void UpdateSpin(bool shouldSpin)
+    {
+        if (shouldSpin && !_spinning)
+        {
+            var animation = new DoubleAnimation
+            {
+                From = 0,
+                To = 360,
+                Duration = TimeSpan.FromSeconds(6),
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            CoverRotation.BeginAnimation(RotateTransform.AngleProperty, animation);
+            _spinning = true;
+        }
+        else if (!shouldSpin && _spinning)
+        {
+            CoverRotation.BeginAnimation(RotateTransform.AngleProperty, null);
+            CoverRotation.Angle = 0;
+            _spinning = false;
+        }
+    }
+
+    private static async Task<BitmapImage?> LoadThumbnailAsync(IRandomAccessStreamReference? reference)
+    {
+        if (reference == null) return null;
+
+        try
+        {
+            using var randomStream = await reference.OpenReadAsync();
+            using var source = randomStream.AsStreamForRead();
+            var buffer = new MemoryStream();
+            await source.CopyToAsync(buffer);
+            buffer.Position = 0;
+
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.StreamSource = buffer;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

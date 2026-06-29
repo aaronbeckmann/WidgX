@@ -138,7 +138,18 @@ public partial class DesignerWindow : Window
         OpacityBox.Text = instance.Opacity.ToString("0.00");
         AccentColorBox.Text = instance.AccentColorHex;
         FontSizeBox.Text = instance.FontSize.ToString("0");
+
+        var isNowPlaying = instance.WidgetType == "NowPlaying";
+        NowPlayingOptions.Visibility = isNowPlaying ? Visibility.Visible : Visibility.Collapsed;
+        if (isNowPlaying)
+        {
+            ShowCoverCheck.IsChecked = ReadBoolSetting(instance, "showCover", true);
+            SpinCoverCheck.IsChecked = ReadBoolSetting(instance, "spinCover", true);
+        }
     }
+
+    private static bool ReadBoolSetting(WidgetInstance instance, string key, bool fallback)
+        => instance.Settings.TryGetValue(key, out var raw) && bool.TryParse(raw, out var value) ? value : fallback;
 
     private void OnApplyProperties(object sender, RoutedEventArgs e)
     {
@@ -151,6 +162,12 @@ public partial class DesignerWindow : Window
         if (double.TryParse(OpacityBox.Text, out var o)) _selectedInstance.Opacity = o;
         if (double.TryParse(FontSizeBox.Text, out var fs)) _selectedInstance.FontSize = fs;
         _selectedInstance.AccentColorHex = AccentColorBox.Text;
+
+        if (_selectedInstance.WidgetType == "NowPlaying")
+        {
+            _selectedInstance.Settings["showCover"] = (ShowCoverCheck.IsChecked == true).ToString();
+            _selectedInstance.Settings["spinCover"] = (SpinCoverCheck.IsChecked == true).ToString();
+        }
 
         RebuildCanvas();
     }
