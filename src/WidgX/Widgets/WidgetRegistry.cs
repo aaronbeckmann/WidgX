@@ -17,6 +17,11 @@ public static class WidgetRegistry
         return Definitions[typeName];
     }
 
+    public static bool TryGet(string typeName, out WidgetTypeDefinition? definition)
+    {
+        return Definitions.TryGetValue(typeName, out definition);
+    }
+
     public static IReadOnlyList<WidgetTypeDefinition> All => Definitions.Values.ToList();
 
     public static void Clear()

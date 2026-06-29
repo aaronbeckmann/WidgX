@@ -53,6 +53,28 @@ public class WidgetRegistryTests : IDisposable
         Assert.Equal(2, WidgetRegistry.All.Count);
     }
 
+    [Fact]
+    public void TryGet_Returns_False_For_Unknown_Type()
+    {
+        var found = WidgetRegistry.TryGet("DoesNotExist", out var definition);
+        Assert.False(found);
+        Assert.Null(definition);
+    }
+
+    [Fact]
+    public void TryGet_Returns_True_And_Definition_For_Known_Type()
+    {
+        WidgetRegistry.Register(new WidgetTypeDefinition
+        {
+            TypeName = "Known", DisplayName = "Known",
+            CreateWidget = () => null!, CreateDefaultInstance = () => new WidgetInstance()
+        });
+
+        var found = WidgetRegistry.TryGet("Known", out var definition);
+        Assert.True(found);
+        Assert.Equal("Known", definition!.TypeName);
+    }
+
     public void Dispose()
     {
         WidgetRegistry.Clear();

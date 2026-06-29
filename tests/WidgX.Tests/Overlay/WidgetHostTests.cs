@@ -25,4 +25,21 @@ public class WidgetHostTests
         Assert.Equal(10, bounds["w1"].X);
         Assert.Equal(80, bounds["w2"].Width);
     }
+
+    [Fact]
+    public void BuildBounds_Still_Includes_Unknown_Widget_Types()
+    {
+        // BuildBounds is pure geometry and doesn't touch the registry, so it
+        // should include every instance regardless of whether its type is known.
+        var layout = new Layout
+        {
+            Widgets = new List<WidgetInstance>
+            {
+                new WidgetInstance { Id = "unknown1", WidgetType = "NotRegistered", X = 0, Y = 0, Width = 10, Height = 10 }
+            }
+        };
+
+        var bounds = WidgetHost.BuildBounds(layout);
+        Assert.Single(bounds);
+    }
 }

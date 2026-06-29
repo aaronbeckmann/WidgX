@@ -33,8 +33,12 @@ public class WidgetHost
 
         foreach (var instance in layout.Widgets)
         {
-            var definition = WidgetRegistry.Get(instance.WidgetType);
-            var widget = definition.CreateWidget();
+            if (!WidgetRegistry.TryGet(instance.WidgetType, out var definition))
+            {
+                continue; // Unknown/removed widget type — skip rather than crash the overlay.
+            }
+
+            var widget = definition!.CreateWidget();
             widget.Configure(instance);
 
             Canvas.SetLeft(widget.View, instance.X);
