@@ -1,0 +1,16 @@
+<UserControl x:Class="WidgX.Widgets.Bluetooth.BluetoothWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Style="{StaticResource WidgetCardStyle}">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Text="&#xE702;" FontFamily="Segoe MDL2 Assets" FontSize="18"
+                       Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"
+                       Margin="0,0,8,0" />
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="DeviceNameText" Foreground="White" Text="No device" />
+                <TextBlock x:Name="StatusText" Foreground="{StaticResource TextSecondaryBrush}"
+                           FontWeight="SemiBold" Text="✕" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -3,6 +3,7 @@ using WidgX.Designer;
 using WidgX.Overlay;
 using WidgX.Persistence;
 using WidgX.Tray;
+using WidgX.Widgets.Bluetooth;
 using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
 using WidgX.Widgets.NowPlaying;
@@ -32,6 +33,7 @@ public partial class App : Application
         SystemStatsWidgetRegistration.Register();
         NowPlayingWidgetRegistration.Register();
         WeatherWidgetRegistration.Register();
+        BluetoothWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();

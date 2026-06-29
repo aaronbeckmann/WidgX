@@ -146,6 +146,26 @@ public partial class DesignerWindow : Window
             ShowCoverCheck.IsChecked = ReadBoolSetting(instance, "showCover", true);
             SpinCoverCheck.IsChecked = ReadBoolSetting(instance, "spinCover", true);
         }
+
+        var isBluetooth = instance.WidgetType == "Bluetooth";
+        BluetoothOptions.Visibility = isBluetooth ? Visibility.Visible : Visibility.Collapsed;
+        if (isBluetooth)
+        {
+            _ = PopulateBluetoothDevicesAsync(instance.Settings.TryGetValue("deviceId", out var id) ? id : null);
+        }
+    }
+
+    private async System.Threading.Tasks.Task PopulateBluetoothDevicesAsync(string? selectedId)
+    {
+        var devices = await new Widgets.Bluetooth.BluetoothDeviceService().GetPairedDevicesAsync();
+        BluetoothDevicePicker.ItemsSource = devices;
+        BluetoothDevicePicker.SelectedItem = devices.FirstOrDefault(d => d.Id == selectedId);
+    }
+
+    private void OnRefreshBluetooth(object sender, RoutedEventArgs e)
+    {
+        var currentId = _selectedInstance?.Settings.TryGetValue("deviceId", out var id) == true ? id : null;
+        _ = PopulateBluetoothDevicesAsync(currentId);
     }
 
     private static bool ReadBoolSetting(WidgetInstance instance, string key, bool fallback)
@@ -167,6 +187,13 @@ public partial class DesignerWindow : Window
         {
             _selectedInstance.Settings["showCover"] = (ShowCoverCheck.IsChecked == true).ToString();
             _selectedInstance.Settings["spinCover"] = (SpinCoverCheck.IsChecked == true).ToString();
+        }
+
+        if (_selectedInstance.WidgetType == "Bluetooth"
+            && BluetoothDevicePicker.SelectedItem is Widgets.Bluetooth.BluetoothDeviceEntry device)
+        {
+            _selectedInstance.Settings["deviceId"] = device.Id;
+            _selectedInstance.Settings["deviceName"] = device.Name;
         }
 
         RebuildCanvas();
