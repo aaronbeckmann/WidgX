@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using WidgX.Designer;
 using WidgX.Overlay;
 using WidgX.Persistence;
 using WidgX.Tray;
@@ -29,7 +30,16 @@ public partial class App : Application
         _overlayWindow.ReloadLayout(layout);
 
         _trayIconManager = new TrayIconManager(
-            onEditLayout: () => { /* wired in Phase 2 */ },
+            onEditLayout: () =>
+            {
+                var currentLayout = LayoutStore.Load(AppPaths.LayoutFilePath);
+                var designer = new DesignerWindow(currentLayout, savedLayout =>
+                {
+                    LayoutStore.Save(AppPaths.LayoutFilePath, savedLayout);
+                    _overlayWindow!.ReloadLayout(savedLayout);
+                });
+                designer.Show();
+            },
             onToggleVisibility: () =>
             {
                 if (_overlayWindow.IsVisible) _overlayWindow.Hide();
