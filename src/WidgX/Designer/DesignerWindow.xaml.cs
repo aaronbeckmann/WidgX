@@ -143,8 +143,17 @@ public partial class DesignerWindow : Window
         var locationName = WeatherLocationBox.Text;
         if (string.IsNullOrWhiteSpace(locationName)) return;
 
-        var weatherService = new Widgets.Weather.WeatherService();
-        var coords = await weatherService.GeocodeAsync(locationName);
+        (double Latitude, double Longitude)? coords;
+        try
+        {
+            var weatherService = new Widgets.Weather.WeatherService();
+            coords = await weatherService.GeocodeAsync(locationName);
+        }
+        catch
+        {
+            // Network/parse failure: keep the typed name but leave coordinates unresolved.
+            coords = null;
+        }
 
         var settings = Persistence.SettingsStore.Load(Persistence.AppPaths.SettingsFilePath);
         settings.WeatherLocationName = locationName;
@@ -154,6 +163,10 @@ public partial class DesignerWindow : Window
             settings.WeatherLongitude = coords.Value.Longitude;
         }
         Persistence.SettingsStore.Save(Persistence.AppPaths.SettingsFilePath, settings);
+
+        LocationStatus.Text = coords != null
+            ? $"Saved: {locationName} ({coords.Value.Latitude:0.00}, {coords.Value.Longitude:0.00})"
+            : $"Saved \"{locationName}\", but its coordinates couldn't be resolved. Check the name or your connection.";
     }
 
     private void OnAutostartChanged(object sender, RoutedEventArgs e)

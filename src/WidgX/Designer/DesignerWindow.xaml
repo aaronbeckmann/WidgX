@@ -51,7 +51,8 @@
                 <StackPanel Margin="16">
                     <TextBlock Text="Weather location (city name)" FontWeight="Bold" />
                     <TextBox x:Name="WeatherLocationBox" Width="220" Margin="0,4,0,12" />
-                    <Button x:Name="SaveLocationButton" Content="Save location" Width="120" Click="OnSaveLocation" HorizontalAlignment="Left" Margin="0,0,0,16" />
+                    <Button x:Name="SaveLocationButton" Content="Save location" Width="120" Click="OnSaveLocation" HorizontalAlignment="Left" Margin="0,0,0,4" />
+                    <TextBlock x:Name="LocationStatus" Foreground="Gray" Margin="0,0,0,16" TextWrapping="Wrap" />
 
                     <CheckBox x:Name="AutostartCheckBox" Content="Run WidgX when Windows starts" Checked="OnAutostartChanged" Unchecked="OnAutostartChanged" />
                 </StackPanel>
