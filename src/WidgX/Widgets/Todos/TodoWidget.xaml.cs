@@ -77,7 +77,6 @@ public partial class TodoWidget : System.Windows.Controls.UserControl, IWidget
     {
         if (sender is System.Windows.Controls.CheckBox { Tag: TodoItem item })
         {
-            item.IsCompleted = !item.IsCompleted;
             Persist();
         }
     }
