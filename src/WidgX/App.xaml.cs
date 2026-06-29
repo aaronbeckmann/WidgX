@@ -6,6 +6,7 @@ using WidgX.Tray;
 using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
 using WidgX.Widgets.Todos;
+using WidgX.Widgets.Uptime;
 using Application = System.Windows.Application;
 
 namespace WidgX;
@@ -22,6 +23,7 @@ public partial class App : Application
         ClockWidgetRegistration.Register();
         CalendarWidgetRegistration.Register();
         TodoWidgetRegistration.Register();
+        UptimeWidgetRegistration.Register();
 
         var layout = LayoutStore.Load(AppPaths.LayoutFilePath);
         var screens = ScreenResolver.GetAllScreens();
