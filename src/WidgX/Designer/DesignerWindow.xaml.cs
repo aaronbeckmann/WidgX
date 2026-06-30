@@ -264,6 +264,7 @@ public partial class DesignerWindow : Window
         {
             ShowCoverCheck.IsChecked = ReadBoolSetting(instance, "showCover", true);
             SpinCoverCheck.IsChecked = ReadBoolSetting(instance, "spinCover", true);
+            SquareCoverCheck.IsChecked = ReadBoolSetting(instance, "squareCover", false);
             ColorBackgroundCheck.IsChecked = ReadBoolSetting(instance, "colorBackground", false);
         }
 
@@ -331,6 +332,7 @@ public partial class DesignerWindow : Window
         {
             _selectedInstance.Settings["showCover"] = (ShowCoverCheck.IsChecked == true).ToString();
             _selectedInstance.Settings["spinCover"] = (SpinCoverCheck.IsChecked == true).ToString();
+            _selectedInstance.Settings["squareCover"] = (SquareCoverCheck.IsChecked == true).ToString();
             _selectedInstance.Settings["colorBackground"] = (ColorBackgroundCheck.IsChecked == true).ToString();
         }
 

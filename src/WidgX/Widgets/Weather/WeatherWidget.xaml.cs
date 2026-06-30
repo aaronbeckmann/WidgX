@@ -1,10 +1,13 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Threading;
 using WidgX.Models;
 using WidgX.Persistence;
 
 namespace WidgX.Widgets.Weather;
+
+public record ForecastRow(string Day, string Icon, string Range);
 
 public partial class WeatherWidget : System.Windows.Controls.UserControl, IWidget
 {
@@ -39,22 +42,35 @@ public partial class WeatherWidget : System.Windows.Controls.UserControl, IWidge
 
         if (settings.WeatherLatitude is null || settings.WeatherLongitude is null)
         {
-            CurrentText.Text = "Set a location in Settings";
+            ShowMessage("📍", "Set a location in Settings");
             return;
         }
 
         try
         {
             var forecast = await _service.GetForecastAsync(settings.WeatherLatitude.Value, settings.WeatherLongitude.Value);
+            var enCulture = CultureInfo.GetCultureInfo("en-US");
 
-            CurrentText.Text = $"{forecast.CurrentTempC:0}°C, {WeatherCodeMapper.Describe(forecast.CurrentWeatherCode)}";
+            CurrentIcon.Text = WeatherIconMapper.Icon(forecast.CurrentWeatherCode);
+            CurrentTemp.Text = $"{forecast.CurrentTempC:0}°C";
+            CurrentDesc.Text = WeatherCodeMapper.Describe(forecast.CurrentWeatherCode);
 
-            ForecastList.ItemsSource = forecast.Daily.Take(5).Select(d =>
-                $"{d.Date:ddd}: {d.MinTempC:0}–{d.MaxTempC:0}°C, {WeatherCodeMapper.Describe(d.WeatherCode)}");
+            ForecastList.ItemsSource = forecast.Daily.Take(5).Select(d => new ForecastRow(
+                d.Date.ToString("ddd", enCulture),
+                WeatherIconMapper.Icon(d.WeatherCode),
+                $"{d.MinTempC:0}–{d.MaxTempC:0}°")).ToList();
         }
         catch (Exception)
         {
-            CurrentText.Text = "Weather unavailable";
+            ShowMessage("⚠️", "Weather unavailable");
         }
+    }
+
+    private void ShowMessage(string icon, string message)
+    {
+        CurrentIcon.Text = icon;
+        CurrentTemp.Text = string.Empty;
+        CurrentDesc.Text = message;
+        ForecastList.ItemsSource = null;
     }
 }

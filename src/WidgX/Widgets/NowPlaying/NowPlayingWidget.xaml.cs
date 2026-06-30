@@ -21,6 +21,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
     private bool _showCover = true;
     private bool _spinCover = true;
+    private bool _squareCover;
     private bool _colorBackground;
     private bool _spinning;
     private string? _lastTrackKey;
@@ -36,15 +37,27 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
     private void UpdateCoverSize()
     {
-        // Scale the album disk with the widget's height (leaving room for padding
-        // and the progress bar), and keep the circular clip in sync.
+        // Scale the album art with the widget's height (leaving room for padding
+        // and the progress bar), and keep the clip shape in sync.
         var size = Math.Clamp(ActualHeight - 36, 36, 240);
         CoverHost.Width = size;
         CoverHost.Height = size;
-        CoverClip.Center = new System.Windows.Point(size / 2, size / 2);
-        CoverClip.RadiusX = size / 2;
-        CoverClip.RadiusY = size / 2;
-        Spindle.Width = Spindle.Height = Math.Max(6, size * 0.18);
+
+        // A square (rounded) cover is only offered when the disk isn't spinning.
+        var square = !_spinCover && _squareCover;
+        if (square)
+        {
+            var radius = size * 0.10;
+            CoverImage.Clip = new RectangleGeometry(new System.Windows.Rect(0, 0, size, size), radius, radius);
+            Spindle.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            var r = size / 2;
+            CoverImage.Clip = new EllipseGeometry(new System.Windows.Point(r, r), r, r);
+            Spindle.Visibility = _spinCover ? Visibility.Visible : Visibility.Collapsed;
+            Spindle.Width = Spindle.Height = Math.Max(6, size * 0.18);
+        }
     }
 
     System.Windows.Controls.UserControl IWidget.View => this;
@@ -58,6 +71,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
         _showCover = ReadBool(config.Settings, "showCover", true);
         _spinCover = ReadBool(config.Settings, "spinCover", true);
+        _squareCover = ReadBool(config.Settings, "squareCover", false);
         _colorBackground = ReadBool(config.Settings, "colorBackground", false);
         _lastTrackKey = null; // force the cover to reload on the next refresh
 
