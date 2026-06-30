@@ -11,6 +11,11 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Resources\tray-icon.ico</ApplicationIcon>
     <Version>1.0.0</Version>
+    <Authors>Aaron Beckmann</Authors>
+    <Company>Aaron Beckmann</Company>
+    <Product>WidgX</Product>
+    <Copyright>Copyright © 2026 Aaron Beckmann</Copyright>
+    <AssemblyTitle>WidgX</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
