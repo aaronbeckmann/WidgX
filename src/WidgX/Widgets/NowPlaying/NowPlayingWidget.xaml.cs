@@ -81,9 +81,9 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         CoverHost.Width = size;
         CoverHost.Height = size;
 
-        // A square (rounded) cover is only offered when the disk isn't spinning.
-        var square = !_spinCover && _squareCover;
-        if (square)
+        // Square cover takes precedence: it shows the full album art (rounded
+        // rectangle, no spinning). Otherwise the cover is a circular record disk.
+        if (_squareCover)
         {
             var radius = size * 0.10;
             CoverImage.Clip = new RectangleGeometry(new System.Windows.Rect(0, 0, size, size), radius, radius);
@@ -216,9 +216,9 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             }
         }
 
-        // Spin only while actually playing, and never tear the animation down for
-        // a transient read (handled by the hysteresis above).
-        UpdateSpin(_showCover && _spinCover && info.IsPlaying
+        // Spin only while actually playing (never for a square cover, and never
+        // torn down for a transient read — handled by the hysteresis above).
+        UpdateSpin(_showCover && _spinCover && !_squareCover && info.IsPlaying
                    && CoverHost.Visibility == Visibility.Visible);
     }
 

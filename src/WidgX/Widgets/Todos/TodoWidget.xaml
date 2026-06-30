@@ -40,8 +40,9 @@
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bd" Width="30" Height="28" CornerRadius="6"
                                 Background="{StaticResource AccentBrush}">
-                            <TextBlock Text="+" FontSize="18" Foreground="#0B0B10"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Path Data="M 7,0 L 7,14 M 0,7 L 14,7" Stroke="#0B0B10" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">

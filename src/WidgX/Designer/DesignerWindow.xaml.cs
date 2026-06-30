@@ -30,12 +30,43 @@ public partial class DesignerWindow : Window
 
     private static readonly string[] ClockItems = { "Time", "Weekday", "Date" };
 
-    private static readonly string[] FontNames =
+    private static readonly string[] PreferredFonts =
     {
         "Segoe UI", "Segoe UI Variable Display", "Arial", "Calibri", "Cambria", "Consolas",
         "Courier New", "Georgia", "Impact", "Lucida Console", "Segoe Print", "Segoe Script",
         "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana", "Comic Sans MS"
     };
+
+    // Common fonts first, then every other installed font family alphabetically,
+    // so custom-installed fonts (e.g. "Permanent Marker") become selectable.
+    private static System.Collections.Generic.List<FontFamily> BuildFontList()
+    {
+        string FamilyName(FontFamily f) =>
+            f.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("en-US"), out var n)
+                ? n
+                : f.Source;
+
+        var installed = System.Windows.Media.Fonts.SystemFontFamilies
+            .GroupBy(FamilyName, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+        var result = new System.Collections.Generic.List<FontFamily>();
+        var used = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var name in PreferredFonts)
+        {
+            if (installed.TryGetValue(name, out var f) && used.Add(name))
+                result.Add(f);
+        }
+
+        foreach (var pair in installed.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            if (used.Add(pair.Key))
+                result.Add(pair.Value);
+        }
+
+        return result;
+    }
 
     private sealed record DateFormatOption(string Label, string Format);
 

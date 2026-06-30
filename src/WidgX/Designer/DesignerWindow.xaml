@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="WidgX Designer" Width="900" Height="650"
+        Icon="/Resources/tray-icon.ico"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource DesignerSurfaceBrush}"
         TextOptions.TextFormattingMode="Ideal">
@@ -97,7 +98,7 @@
                             <TextBlock Text="Now Playing" FontWeight="Bold" Margin="0,0,0,4" />
                             <CheckBox x:Name="ShowCoverCheck" Content="Show cover art" />
                             <CheckBox x:Name="SpinCoverCheck" Content="Spin cover (record disk)" Margin="0,4,0,0" />
-                            <CheckBox x:Name="SquareCoverCheck" Content="Square cover (when not spinning)" Margin="0,4,0,0" />
+                            <CheckBox x:Name="SquareCoverCheck" Content="Square cover (full art, no spin)" Margin="0,4,0,0" />
                             <CheckBox x:Name="ColorBackgroundCheck" Content="Color-fade background (from cover)" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel x:Name="BluetoothOptions" Visibility="Collapsed" Margin="0,10,0,0">

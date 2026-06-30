@@ -9,6 +9,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Resources\tray-icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
