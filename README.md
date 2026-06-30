@@ -51,6 +51,19 @@ Built with WPF on .NET 8.
 
 ---
 
+## Install
+
+Download the latest **`WidgX-<version>-win-x64.msi`** from the
+[Releases](https://github.com/aaronbeckmann/WidgX/releases) page and run it. It
+installs per‑user (no administrator rights) into
+`%LocalAppData%\Programs\WidgX`, adds a Start Menu shortcut, and registers an
+Add/Remove Programs entry. Alternatively, download the `.zip`, extract it, and run
+`WidgX.exe` directly.
+
+WidgX checks GitHub for newer releases on startup and from the tray menu
+(**Check for Updates**); when one is available it shows a notification that links
+to the download.
+
 ## Build & run
 
 ### Quick build (recommended)
@@ -79,6 +92,17 @@ Or publish manually:
 ```bat
 dotnet publish src\WidgX\WidgX.csproj -c Release -r win-x64 --self-contained true -o build
 ```
+
+### Build the installer
+
+Install the free [WiX v5](https://wixtoolset.org/) toolset once
+(`dotnet tool install --global wix --version 5.0.2`), then run:
+
+```bat
+installer\build-installer.bat
+```
+
+This rebuilds the app and produces a single per‑user MSI in `dist\`.
 
 ---
 
