@@ -278,6 +278,10 @@ public partial class DesignerWindow : Window
         ClockOptions.Visibility = isClock ? Visibility.Visible : Visibility.Collapsed;
         if (isClock)
         {
+            ClockShowTime.IsChecked = ReadBoolSetting(instance, "showTime", true);
+            ClockShowWeekday.IsChecked = ReadBoolSetting(instance, "showWeekday", true);
+            ClockShowDate.IsChecked = ReadBoolSetting(instance, "showDate", true);
+
             var order = Widgets.Clock.ClockWidget.ResolveItemOrder(
                 instance.Settings.TryGetValue("order", out var ord) ? ord : null);
             ClockOrder1.SelectedItem = order[0];
@@ -339,6 +343,10 @@ public partial class DesignerWindow : Window
 
         if (_selectedInstance.WidgetType == "Clock")
         {
+            _selectedInstance.Settings["showTime"] = (ClockShowTime.IsChecked == true).ToString();
+            _selectedInstance.Settings["showWeekday"] = (ClockShowWeekday.IsChecked == true).ToString();
+            _selectedInstance.Settings["showDate"] = (ClockShowDate.IsChecked == true).ToString();
+
             var order = $"{ClockOrder1.SelectedItem},{ClockOrder2.SelectedItem},{ClockOrder3.SelectedItem}";
             _selectedInstance.Settings["order"] = order;
             _selectedInstance.Settings["timeFontSize"] = ClockTimeSize.Text;

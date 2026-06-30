@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -32,7 +33,11 @@ public class WeatherService
 
     public async Task<WeatherForecast> GetForecastAsync(double lat, double lon)
     {
-        var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}" +
+        // Coordinates must use '.' as the decimal separator regardless of the
+        // current culture, or the API rejects the request.
+        var latText = lat.ToString(CultureInfo.InvariantCulture);
+        var lonText = lon.ToString(CultureInfo.InvariantCulture);
+        var url = $"https://api.open-meteo.com/v1/forecast?latitude={latText}&longitude={lonText}" +
                   "&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto";
         var json = await _httpClient.GetStringAsync(url);
 

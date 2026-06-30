@@ -76,9 +76,18 @@ public partial class ClockWidget : System.Windows.Controls.UserControl, IWidget
             DateText.Foreground = new SolidColorBrush(color);
         }
 
-        ApplyOrder(config.Settings.TryGetValue("order", out var order) ? order : null);
+        var enabled = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Time"] = ReadBool(config, "showTime", true),
+            ["Weekday"] = ReadBool(config, "showWeekday", true),
+            ["Date"] = ReadBool(config, "showDate", true)
+        };
+        ApplyOrder(config.Settings.TryGetValue("order", out var order) ? order : null, enabled);
         Refresh();
     }
+
+    private static bool ReadBool(WidgetInstance config, string key, bool fallback)
+        => config.Settings.TryGetValue(key, out var raw) && bool.TryParse(raw, out var value) ? value : fallback;
 
     private static double ReadSize(WidgetInstance config, string key, double fallback)
         => config.Settings.TryGetValue(key, out var raw)
@@ -87,7 +96,7 @@ public partial class ClockWidget : System.Windows.Controls.UserControl, IWidget
             ? value
             : fallback;
 
-    private void ApplyOrder(string? order)
+    private void ApplyOrder(string? order, IReadOnlyDictionary<string, bool> enabled)
     {
         var map = new Dictionary<string, TextBlock>(StringComparer.OrdinalIgnoreCase)
         {
@@ -99,6 +108,7 @@ public partial class ClockWidget : System.Windows.Controls.UserControl, IWidget
         RootStack.Children.Clear();
         foreach (var key in ResolveItemOrder(order))
         {
+            if (enabled.TryGetValue(key, out var on) && !on) continue;
             RootStack.Children.Add(map[key]);
         }
     }
