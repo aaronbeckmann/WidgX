@@ -90,7 +90,7 @@
                         <ComboBox x:Name="FontPicker">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Source}" FontFamily="{Binding}" FontSize="14" />
+                                    <TextBlock Text="{Binding DisplayName}" FontFamily="{Binding Family}" FontSize="14" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>

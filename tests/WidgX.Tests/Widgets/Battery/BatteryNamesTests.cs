@@ -6,7 +6,7 @@ namespace WidgX.Tests.Widgets.Battery;
 public class BatteryNamesTests
 {
     [Theory]
-    [InlineData("Sonos Ace Hands-Free AG", "Sonos Ace")]
+    [InlineData("Sonos Ace Hands-Free AG", "Sonos Ace Hands-Free")]
     [InlineData("Sonos Ace", "Sonos Ace")]
     [InlineData("Headset Stereo", "Headset")]
     [InlineData("Mouse LE", "Mouse")]

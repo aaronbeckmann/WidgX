@@ -37,32 +37,54 @@ public partial class DesignerWindow : Window
         "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana", "Comic Sans MS"
     };
 
+    // A selectable font: DisplayName is the friendly family name shown in the dropdown;
+    // Family renders the preview and its Source is the value persisted to the layout.
+    private sealed record FontOption(string DisplayName, FontFamily Family);
+
     // Common fonts first, then every other installed font family alphabetically,
     // so custom-installed fonts (e.g. "Permanent Marker") become selectable.
-    private static System.Collections.Generic.List<FontFamily> BuildFontList()
+    private static System.Collections.Generic.List<FontOption> BuildFontList()
     {
+        var lang = System.Windows.Markup.XmlLanguage.GetLanguage("en-US");
         string FamilyName(FontFamily f) =>
-            f.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("en-US"), out var n)
-                ? n
-                : f.Source;
+            f.FamilyNames.TryGetValue(lang, out var n) ? n : f.Source;
 
-        var installed = System.Windows.Media.Fonts.SystemFontFamilies
-            .GroupBy(FamilyName, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        // Machine-wide fonts. Their Source is the plain family name, which resolves by name.
+        var byName = new System.Collections.Generic.Dictionary<string, FontFamily>(
+            StringComparer.OrdinalIgnoreCase);
+        foreach (var f in System.Windows.Media.Fonts.SystemFontFamilies)
+            byName.TryAdd(FamilyName(f), f);
 
-        var result = new System.Collections.Generic.List<FontFamily>();
+        // Per-user fonts (%LOCALAPPDATA%\Microsoft\Windows\Fonts) are NOT part of
+        // SystemFontFamilies. Enumerate them and qualify each with an absolute location so
+        // the family both previews here and later resolves via new FontFamily(Source).
+        var perUserDir = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft", "Windows", "Fonts");
+        if (System.IO.Directory.Exists(perUserDir))
+        {
+            var baseUri = new Uri(perUserDir + System.IO.Path.DirectorySeparatorChar).AbsoluteUri;
+            foreach (var f in System.Windows.Media.Fonts.GetFontFamilies(perUserDir))
+            {
+                var name = FamilyName(f);
+                if (!byName.ContainsKey(name))
+                    byName[name] = new FontFamily(baseUri + "#" + name);
+            }
+        }
+
+        var result = new System.Collections.Generic.List<FontOption>();
         var used = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var name in PreferredFonts)
         {
-            if (installed.TryGetValue(name, out var f) && used.Add(name))
-                result.Add(f);
+            if (byName.TryGetValue(name, out var f) && used.Add(name))
+                result.Add(new FontOption(name, f));
         }
 
-        foreach (var pair in installed.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
+        foreach (var pair in byName.OrderBy(p => p.Key, StringComparer.OrdinalIgnoreCase))
         {
             if (used.Add(pair.Key))
-                result.Add(pair.Value);
+                result.Add(new FontOption(pair.Key, pair.Value));
         }
 
         return result;
@@ -298,9 +320,9 @@ public partial class DesignerWindow : Window
         AccentColorBox.Text = instance.AccentColorHex;
         FontSizeBox.Text = instance.FontSize.ToString("0");
 
-        var fonts = (System.Collections.Generic.IEnumerable<FontFamily>)FontPicker.ItemsSource;
+        var fonts = (System.Collections.Generic.IEnumerable<FontOption>)FontPicker.ItemsSource;
         FontPicker.SelectedItem = fonts.FirstOrDefault(
-            f => string.Equals(f.Source, instance.FontFamily, StringComparison.OrdinalIgnoreCase)) ?? fonts.First();
+            o => string.Equals(o.Family.Source, instance.FontFamily, StringComparison.OrdinalIgnoreCase)) ?? fonts.First();
 
         var isNowPlaying = instance.WidgetType == "NowPlaying";
         NowPlayingOptions.Visibility = isNowPlaying ? Visibility.Visible : Visibility.Collapsed;
@@ -370,7 +392,7 @@ public partial class DesignerWindow : Window
         if (double.TryParse(HeightBox.Text, out var h)) _selectedInstance.Height = h;
         if (double.TryParse(OpacityBox.Text, out var o)) _selectedInstance.Opacity = o;
         if (double.TryParse(FontSizeBox.Text, out var fs)) _selectedInstance.FontSize = fs;
-        if (FontPicker.SelectedItem is FontFamily font) _selectedInstance.FontFamily = font.Source;
+        if (FontPicker.SelectedItem is FontOption font) _selectedInstance.FontFamily = font.Family.Source;
         _selectedInstance.AccentColorHex = AccentColorBox.Text;
 
         if (_selectedInstance.WidgetType == "NowPlaying")

@@ -3,15 +3,17 @@ using System;
 namespace WidgX.Widgets.Battery;
 
 /// <summary>
-/// Normalizes device names so the same physical device reported under several
-/// Bluetooth profiles (e.g. "Sonos Ace" and "Sonos Ace Hands-Free AG") collapses
-/// to a single friendly name.
+/// Normalizes device names by stripping purely technical Bluetooth transport
+/// suffixes (e.g. "Sonos Ace Avrcp Transport" -> "Sonos Ace"), while preserving
+/// meaningful profile distinctions like "Hands-Free". This way a device that
+/// reports a different battery level per profile (e.g. "Sonos Ace" 86% and
+/// "Sonos Ace Hands-Free" 50%) keeps both readings visible as separate entries.
 /// </summary>
 public static class BatteryNames
 {
     private static readonly string[] ProfileSuffixes =
     {
-        " Hands-Free AG", " Hands-Free", " Avrcp Transport", " Stereo", " AG", " LE"
+        " Avrcp Transport", " Stereo", " AG", " LE"
     };
 
     public static string Clean(string name)
