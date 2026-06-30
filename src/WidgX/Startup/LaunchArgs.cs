@@ -13,4 +13,9 @@ public static class LaunchArgs
     {
         return args.Contains("--check-updates");
     }
+
+    public static bool IsOpenDesigner(string[] args)
+    {
+        return args.Contains("--designer");
+    }
 }

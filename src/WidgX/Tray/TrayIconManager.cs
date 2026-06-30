@@ -32,6 +32,12 @@ public class TrayIconManager : IDisposable
             _balloonClick = null;
             click?.Invoke();
         };
+
+        // Left-clicking the tray icon opens the designer (right-click shows the menu).
+        _notifyIcon.MouseClick += (_, e) =>
+        {
+            if (e.Button == MouseButtons.Left) onEditLayout();
+        };
     }
 
     /// <summary>Shows a tray notification; <paramref name="onClick"/> runs if it's clicked.</summary>

@@ -24,6 +24,7 @@ public partial class App : Application
     private bool _isBackgroundLaunch;
     private OverlayWindow? _overlayWindow;
     private TrayIconManager? _trayIconManager;
+    private DesignerWindow? _designerWindow;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -57,16 +58,7 @@ public partial class App : Application
         _overlayWindow.ReloadLayout(layout);
 
         _trayIconManager = new TrayIconManager(
-            onEditLayout: () =>
-            {
-                var currentLayout = LayoutStore.Load(AppPaths.LayoutFilePath);
-                var designer = new DesignerWindow(currentLayout, savedLayout =>
-                {
-                    LayoutStore.Save(AppPaths.LayoutFilePath, savedLayout);
-                    _overlayWindow!.ReloadLayout(savedLayout);
-                });
-                designer.Show();
-            },
+            onEditLayout: OpenDesigner,
             onToggleVisibility: () =>
             {
                 if (_overlayWindow.IsVisible) _overlayWindow.Hide();
@@ -86,8 +78,34 @@ public partial class App : Application
 
         _trayIconManager.Show();
 
+        // Open the designer right away when requested (e.g. straight after install).
+        if (WidgX.Startup.LaunchArgs.IsOpenDesigner(e.Args))
+        {
+            OpenDesigner();
+        }
+
         // Quietly check for updates on startup; only notify if one is available.
         _ = CheckForUpdatesAsync(manual: false);
+    }
+
+    private void OpenDesigner()
+    {
+        // Keep a single designer instance; bring it forward if already open.
+        if (_designerWindow != null)
+        {
+            _designerWindow.Activate();
+            return;
+        }
+
+        var currentLayout = LayoutStore.Load(AppPaths.LayoutFilePath);
+        _designerWindow = new DesignerWindow(currentLayout, savedLayout =>
+        {
+            LayoutStore.Save(AppPaths.LayoutFilePath, savedLayout);
+            _overlayWindow!.ReloadLayout(savedLayout);
+        });
+        _designerWindow.Closed += (_, _) => _designerWindow = null;
+        _designerWindow.Show();
+        _designerWindow.Activate();
     }
 
     private async Task CheckForUpdatesAsync(bool manual)
