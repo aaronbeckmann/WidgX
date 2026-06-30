@@ -11,6 +11,7 @@ namespace WidgX.Designer;
 public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
 {
     private readonly WidgetInstance _instance;
+    private readonly System.Windows.FrameworkElement _view;
     private System.Windows.Point _dragStartMouse;
     private System.Windows.Point _dragStartPosition;
     private bool _isDragging;
@@ -32,7 +33,8 @@ public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
         InitializeComponent();
         _instance = instance;
 
-        WidgetContent.Content = widget.View;
+        _view = widget.View;
+        WidgetContent.Content = _view;
         Width = instance.Width;
         Height = instance.Height;
 
@@ -92,6 +94,11 @@ public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
 
         Width = newWidth;
         Height = newHeight;
+
+        // Resize the hosted widget too, so the content scales with the box
+        // rather than the selection border growing around a fixed-size widget.
+        _view.Width = newWidth;
+        _view.Height = newHeight;
 
         _instance.Width = newWidth;
         _instance.Height = newHeight;

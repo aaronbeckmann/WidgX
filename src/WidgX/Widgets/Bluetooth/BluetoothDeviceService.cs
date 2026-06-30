@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Windows.Devices.Bluetooth;
 using Windows.Devices.Enumeration;
 
 namespace WidgX.Widgets.Bluetooth;
@@ -14,69 +15,109 @@ public class BluetoothStatus
     public bool Charging { get; init; }
 }
 
+public record BluetoothDeviceStatus(string Name, BluetoothStatus Status);
+
 /// <summary>
-/// Enumerates paired Bluetooth devices and reads their connection/battery state
-/// via the Windows device-enumeration (AEP) APIs. No elevation required; all
-/// calls degrade gracefully on failure.
+/// Enumerates paired Bluetooth devices (classic and LE) and reads their
+/// connection/battery state. Uses the pairing-state device selectors, whose
+/// association endpoints carry an accurate IsConnected flag. No elevation
+/// required; all calls degrade gracefully on failure.
 /// </summary>
 public class BluetoothDeviceService
 {
-    // Well-known property keys exposed on Bluetooth association endpoints.
     private const string BatteryKey = "{104EA319-6EE2-4701-BD47-8DDBF425BBE5} 2";
-    private const string ConnectedKey = "System.Devices.Aep.IsConnected";
+    private const string AepIsConnectedKey = "System.Devices.Aep.IsConnected";
+    private const string ConnectedKey = "{83DA6326-97A6-4088-9453-A1923F573B29} 15";
 
-    private const string PairedBluetoothSelector =
-        "System.Devices.Aep.ProtocolId:=\"{bb7bb05e-5972-42b5-94fc-76eaa7084d49}\"" +
-        " AND System.Devices.Aep.IsPaired:=System.StructuredQueryType.Boolean#True";
-
-    private static readonly string[] RequestedProperties = { BatteryKey, ConnectedKey };
+    private static readonly string[] RequestedProperties = { BatteryKey, AepIsConnectedKey, ConnectedKey };
 
     public async Task<List<BluetoothDeviceEntry>> GetPairedDevicesAsync()
     {
-        var devices = new List<BluetoothDeviceEntry>();
-        try
-        {
-            var found = await DeviceInformation.FindAllAsync(
-                PairedBluetoothSelector, RequestedProperties, DeviceInformationKind.AssociationEndpoint);
+        var entries = new List<BluetoothDeviceEntry>();
+        var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var device in found)
-            {
-                if (!string.IsNullOrWhiteSpace(device.Name))
-                {
-                    devices.Add(new BluetoothDeviceEntry(device.Id, device.Name));
-                }
-            }
-        }
-        catch (Exception)
+        foreach (var device in await EnumeratePairedAsync())
         {
-            // Bluetooth radio off / API unavailable: return what we have.
+            if (string.IsNullOrWhiteSpace(device.Name) || !seenNames.Add(device.Name)) continue;
+            entries.Add(new BluetoothDeviceEntry(device.Id, device.Name));
         }
-        return devices;
+        return entries;
     }
 
     public async Task<BluetoothStatus> GetStatusAsync(string deviceId)
     {
         if (string.IsNullOrWhiteSpace(deviceId)) return new BluetoothStatus();
 
-        try
+        foreach (var device in await EnumeratePairedAsync())
         {
-            var device = await DeviceInformation.CreateFromIdAsync(
-                deviceId, RequestedProperties, DeviceInformationKind.AssociationEndpoint);
+            if (device.Id == deviceId) return BuildStatus(device);
+        }
+        return new BluetoothStatus();
+    }
 
-            var connected = device.Properties.TryGetValue(ConnectedKey, out var c) && c is bool b && b;
+    /// <summary>Connected paired devices and their battery levels.</summary>
+    public async Task<List<BluetoothDeviceStatus>> GetConnectedStatusesAsync()
+    {
+        var result = new List<BluetoothDeviceStatus>();
+        var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            int? battery = null;
-            if (connected && device.Properties.TryGetValue(BatteryKey, out var raw) && raw != null)
+        foreach (var device in await EnumeratePairedAsync())
+        {
+            if (string.IsNullOrWhiteSpace(device.Name) || !seenNames.Add(device.Name)) continue;
+
+            var status = BuildStatus(device);
+            if (status.Connected)
             {
-                try { battery = Convert.ToInt32(raw); }
-                catch { battery = null; }
+                result.Add(new BluetoothDeviceStatus(device.Name, status));
             }
+        }
+        return result;
+    }
 
-            return new BluetoothStatus { Connected = connected, BatteryPercent = battery, Charging = false };
-        }
-        catch (Exception)
+    private static async Task<List<DeviceInformation>> EnumeratePairedAsync()
+    {
+        var all = new List<DeviceInformation>();
+        string[] selectors =
         {
-            return new BluetoothStatus();
+            BluetoothDevice.GetDeviceSelectorFromPairingState(true),
+            BluetoothLEDevice.GetDeviceSelectorFromPairingState(true)
+        };
+
+        foreach (var selector in selectors)
+        {
+            try
+            {
+                var found = await DeviceInformation.FindAllAsync(selector, RequestedProperties);
+                all.AddRange(found);
+            }
+            catch (Exception)
+            {
+                // Radio off / API unavailable: skip this selector.
+            }
         }
+        return all;
+    }
+
+    private static BluetoothStatus BuildStatus(DeviceInformation device)
+    {
+        var battery = ReadBattery(device);
+        var connected = ReadBool(device, AepIsConnectedKey)
+                        || ReadBool(device, ConnectedKey)
+                        || battery.HasValue;
+
+        return new BluetoothStatus { Connected = connected, BatteryPercent = battery, Charging = false };
+    }
+
+    private static bool ReadBool(DeviceInformation device, string key)
+        => device.Properties.TryGetValue(key, out var value) && value is bool b && b;
+
+    private static int? ReadBattery(DeviceInformation device)
+    {
+        if (device.Properties.TryGetValue(BatteryKey, out var raw) && raw != null)
+        {
+            try { return Convert.ToInt32(raw); }
+            catch { return null; }
+        }
+        return null;
     }
 }

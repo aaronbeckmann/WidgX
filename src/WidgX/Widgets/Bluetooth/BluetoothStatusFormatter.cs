@@ -7,12 +7,13 @@ public static class BluetoothStatusFormatter
 {
     /// <summary>
     /// "✕" when disconnected; otherwise the battery percentage (with a "⚡"
-    /// suffix while charging), or "—" when the device doesn't report a level.
+    /// suffix while charging), or "✓" when connected but the device doesn't
+    /// report a battery level.
     /// </summary>
     public static string Format(bool connected, int? batteryPercent, bool charging)
     {
         if (!connected) return "✕";
-        if (batteryPercent == null) return "—";
+        if (batteryPercent == null) return "✓";
 
         var suffix = charging ? " ⚡" : string.Empty;
         return $"{batteryPercent.Value}%{suffix}";

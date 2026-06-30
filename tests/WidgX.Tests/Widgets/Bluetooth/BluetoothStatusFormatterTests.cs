@@ -24,8 +24,8 @@ public class BluetoothStatusFormatterTests
     }
 
     [Fact]
-    public void Connected_NoBatteryReported_ShowsDash()
+    public void Connected_NoBatteryReported_ShowsCheck()
     {
-        Assert.Equal("—", BluetoothStatusFormatter.Format(true, null, false));
+        Assert.Equal("✓", BluetoothStatusFormatter.Format(true, null, false));
     }
 }

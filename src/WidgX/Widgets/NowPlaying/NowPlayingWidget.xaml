@@ -8,7 +8,7 @@
                 <Grid x:Name="CoverHost" Width="52" Height="52" Margin="0,0,10,0"
                       VerticalAlignment="Center" Visibility="Collapsed">
                     <Image x:Name="CoverImage" Stretch="UniformToFill"
-                           RenderTransformOrigin="0.5,0.5">
+                           RenderTransformOrigin="0.5,0.5" CacheMode="BitmapCache">
                         <Image.Clip>
                             <EllipseGeometry Center="26,26" RadiusX="26" RadiusY="26" />
                         </Image.Clip>

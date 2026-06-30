@@ -16,7 +16,15 @@ public static class ClockWidgetRegistration
                 Height = 110,
                 Opacity = 0.9,
                 AccentColorHex = "#FFFFFF",
-                FontSize = 14
+                FontSize = 14,
+                Settings = new System.Collections.Generic.Dictionary<string, string>
+                {
+                    ["order"] = "Time,Weekday,Date",
+                    ["timeFontSize"] = "28",
+                    ["weekdayFontSize"] = "14",
+                    ["dateFontSize"] = "14",
+                    ["dateFormat"] = "yyyy-MM-dd"
+                }
             }
         });
     }

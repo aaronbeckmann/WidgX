@@ -6,4 +6,9 @@ public class AppSettings
     public string WeatherLocationName { get; set; } = string.Empty;
     public double? WeatherLatitude { get; set; }
     public double? WeatherLongitude { get; set; }
+
+    public double? DesignerWindowLeft { get; set; }
+    public double? DesignerWindowTop { get; set; }
+    public double? DesignerWindowWidth { get; set; }
+    public double? DesignerWindowHeight { get; set; }
 }

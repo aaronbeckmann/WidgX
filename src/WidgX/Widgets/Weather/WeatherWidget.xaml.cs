@@ -24,7 +24,7 @@ public partial class WeatherWidget : System.Windows.Controls.UserControl, IWidge
     {
         Width = config.Width;
         Height = config.Height;
-        Opacity = config.Opacity;
+        WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         FontSize = config.FontSize;
         _ = Refresh();
     }

@@ -37,7 +37,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
     {
         Width = config.Width;
         Height = config.Height;
-        Opacity = config.Opacity;
+        WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         FontSize = config.FontSize;
 
         _showCover = ReadBool(config.Settings, "showCover", true);

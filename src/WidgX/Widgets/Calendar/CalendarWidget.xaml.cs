@@ -60,7 +60,7 @@ public partial class CalendarWidget : System.Windows.Controls.UserControl, IWidg
     {
         Width = config.Width;
         Height = config.Height;
-        Opacity = config.Opacity;
+        WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         FontSize = config.FontSize;
 
         if (System.Windows.Media.ColorConverter.ConvertFromString(config.AccentColorHex) is System.Windows.Media.Color color)

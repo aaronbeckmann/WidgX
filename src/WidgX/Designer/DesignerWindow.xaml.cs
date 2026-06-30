@@ -27,6 +27,20 @@ public partial class DesignerWindow : Window
         "#64B5F6", "#FFD54F", "#4DB6AC", "#F06292", "#A1887F", "#90A4AE"
     };
 
+    private static readonly string[] ClockItems = { "Time", "Weekday", "Date" };
+
+    private sealed record DateFormatOption(string Label, string Format);
+
+    private static readonly DateFormatOption[] DateFormats =
+    {
+        new("2026-06-30", "yyyy-MM-dd"),
+        new("06/30/2026", "MM/dd/yyyy"),
+        new("30.06.2026", "dd.MM.yyyy"),
+        new("June 30, 2026", "MMMM d, yyyy"),
+        new("30 Jun 2026", "d MMM yyyy"),
+        new("Tue, Jun 30", "ddd, MMM d")
+    };
+
     public DesignerWindow(Layout initialLayout, Action<Layout> onSaved)
     {
         InitializeComponent();
@@ -57,8 +71,50 @@ public partial class DesignerWindow : Window
         WeatherLocationBox.Text = settings.WeatherLocationName;
         AutostartCheckBox.IsChecked = Startup.AutostartManager.IsEnabled();
 
+        RestoreWindowBounds(settings);
+        Closing += OnWindowClosing;
+
         BuildSwatches();
+        ClockOrder1.ItemsSource = ClockItems;
+        ClockOrder2.ItemsSource = ClockItems;
+        ClockOrder3.ItemsSource = ClockItems;
+        ClockDateFormat.ItemsSource = DateFormats;
         RebuildCanvas();
+    }
+
+    private void RestoreWindowBounds(Models.AppSettings settings)
+    {
+        if (settings.DesignerWindowWidth is not > 0 || settings.DesignerWindowHeight is not > 0) return;
+        if (settings.DesignerWindowLeft is not { } left || settings.DesignerWindowTop is not { } top) return;
+
+        var width = settings.DesignerWindowWidth.Value;
+        var height = settings.DesignerWindowHeight.Value;
+
+        // Only restore if the window would be visible on the current virtual screen.
+        var virtualScreen = new Rect(
+            SystemParameters.VirtualScreenLeft, SystemParameters.VirtualScreenTop,
+            SystemParameters.VirtualScreenWidth, SystemParameters.VirtualScreenHeight);
+        if (!virtualScreen.IntersectsWith(new Rect(left, top, width, height))) return;
+
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        Left = left;
+        Top = top;
+        Width = width;
+        Height = height;
+    }
+
+    private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        var bounds = WindowState == WindowState.Normal
+            ? new Rect(Left, Top, Width, Height)
+            : RestoreBounds;
+
+        var settings = Persistence.SettingsStore.Load(Persistence.AppPaths.SettingsFilePath);
+        settings.DesignerWindowLeft = bounds.Left;
+        settings.DesignerWindowTop = bounds.Top;
+        settings.DesignerWindowWidth = bounds.Width;
+        settings.DesignerWindowHeight = bounds.Height;
+        Persistence.SettingsStore.Save(Persistence.AppPaths.SettingsFilePath, settings);
     }
 
     private void BuildSwatches()
@@ -150,7 +206,7 @@ public partial class DesignerWindow : Window
     {
         ClearGuides();
 
-        var thickness = Math.Max(1, DesignCanvas.Width * 0.003);
+        var thickness = Math.Max(0.5, DesignCanvas.Width * 0.0012);
         var brush = new SolidColorBrush(Color.FromRgb(0xFF, 0x4C, 0x9A));
 
         if (guideX is { } gx)
@@ -214,7 +270,26 @@ public partial class DesignerWindow : Window
         BluetoothOptions.Visibility = isBluetooth ? Visibility.Visible : Visibility.Collapsed;
         if (isBluetooth)
         {
+            BluetoothAllDevicesCheck.IsChecked = ReadBoolSetting(instance, "showAll", false);
             _ = PopulateBluetoothDevicesAsync(instance.Settings.TryGetValue("deviceId", out var id) ? id : null);
+        }
+
+        var isClock = instance.WidgetType == "Clock";
+        ClockOptions.Visibility = isClock ? Visibility.Visible : Visibility.Collapsed;
+        if (isClock)
+        {
+            var order = Widgets.Clock.ClockWidget.ResolveItemOrder(
+                instance.Settings.TryGetValue("order", out var ord) ? ord : null);
+            ClockOrder1.SelectedItem = order[0];
+            ClockOrder2.SelectedItem = order[1];
+            ClockOrder3.SelectedItem = order[2];
+
+            ClockTimeSize.Text = instance.Settings.TryGetValue("timeFontSize", out var ts) ? ts : "28";
+            ClockWeekdaySize.Text = instance.Settings.TryGetValue("weekdayFontSize", out var ws) ? ws : "14";
+            ClockDateSize.Text = instance.Settings.TryGetValue("dateFontSize", out var ds) ? ds : "14";
+
+            var currentFormat = instance.Settings.TryGetValue("dateFormat", out var df) ? df : "yyyy-MM-dd";
+            ClockDateFormat.SelectedItem = DateFormats.FirstOrDefault(f => f.Format == currentFormat) ?? DateFormats[0];
         }
     }
 
@@ -252,11 +327,27 @@ public partial class DesignerWindow : Window
             _selectedInstance.Settings["spinCover"] = (SpinCoverCheck.IsChecked == true).ToString();
         }
 
-        if (_selectedInstance.WidgetType == "Bluetooth"
-            && BluetoothDevicePicker.SelectedItem is Widgets.Bluetooth.BluetoothDeviceEntry device)
+        if (_selectedInstance.WidgetType == "Bluetooth")
         {
-            _selectedInstance.Settings["deviceId"] = device.Id;
-            _selectedInstance.Settings["deviceName"] = device.Name;
+            if (BluetoothDevicePicker.SelectedItem is Widgets.Bluetooth.BluetoothDeviceEntry device)
+            {
+                _selectedInstance.Settings["deviceId"] = device.Id;
+                _selectedInstance.Settings["deviceName"] = device.Name;
+            }
+            _selectedInstance.Settings["showAll"] = (BluetoothAllDevicesCheck.IsChecked == true).ToString();
+        }
+
+        if (_selectedInstance.WidgetType == "Clock")
+        {
+            var order = $"{ClockOrder1.SelectedItem},{ClockOrder2.SelectedItem},{ClockOrder3.SelectedItem}";
+            _selectedInstance.Settings["order"] = order;
+            _selectedInstance.Settings["timeFontSize"] = ClockTimeSize.Text;
+            _selectedInstance.Settings["weekdayFontSize"] = ClockWeekdaySize.Text;
+            _selectedInstance.Settings["dateFontSize"] = ClockDateSize.Text;
+            if (ClockDateFormat.SelectedItem is DateFormatOption fmt)
+            {
+                _selectedInstance.Settings["dateFormat"] = fmt.Format;
+            }
         }
 
         RebuildCanvas();
