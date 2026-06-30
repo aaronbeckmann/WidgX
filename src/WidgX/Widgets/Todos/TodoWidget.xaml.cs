@@ -57,6 +57,14 @@ public partial class TodoWidget : System.Windows.Controls.UserControl, IWidget
         ItemsList.ItemsSource = SortForDisplay(_items);
     }
 
+    private void OnNewItemKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            OnAddClick(sender, e);
+        }
+    }
+
     private void OnAddClick(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(NewItemText.Text)) return;

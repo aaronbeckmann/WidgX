@@ -196,6 +196,29 @@
         </Setter>
     </Style>
 
+    <Style TargetType="DatePicker">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="{StaticResource ControlBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ControlBorderBrush}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+    </Style>
+
+    <Style TargetType="DatePickerTextBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePickerTextBox">
+                    <Border Background="{TemplateBinding Background}" BorderThickness="0">
+                        <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style TargetType="ListBox">
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Background" Value="{StaticResource DesignerPanelBrush}" />
