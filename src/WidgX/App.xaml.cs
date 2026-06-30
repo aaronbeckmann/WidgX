@@ -1,8 +1,11 @@
-﻿using System.Windows;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
 using WidgX.Designer;
 using WidgX.Overlay;
 using WidgX.Persistence;
 using WidgX.Tray;
+using WidgX.Update;
 using WidgX.Widgets.Bluetooth;
 using WidgX.Widgets.Calendar;
 using WidgX.Widgets.Clock;
@@ -59,6 +62,7 @@ public partial class App : Application
                 if (_overlayWindow.IsVisible) _overlayWindow.Hide();
                 else _overlayWindow.Show();
             },
+            onCheckForUpdates: () => _ = CheckForUpdatesAsync(manual: true),
             onExit: () => Shutdown());
 
         if (!string.IsNullOrEmpty(layout.SelectedScreenId) && selectedScreen.Id != layout.SelectedScreenId)
@@ -71,6 +75,46 @@ public partial class App : Application
         }
 
         _trayIconManager.Show();
+
+        // Quietly check for updates on startup; only notify if one is available.
+        _ = CheckForUpdatesAsync(manual: false);
+    }
+
+    private async Task CheckForUpdatesAsync(bool manual)
+    {
+        var current = typeof(App).Assembly.GetName().Version ?? new Version(1, 0, 0);
+        var info = await new UpdateService().CheckAsync(current);
+
+        if (info == null)
+        {
+            if (manual) _trayIconManager?.ShowBalloon("WidgX", "Couldn't check for updates. Try again later.");
+            return;
+        }
+
+        if (info.IsAvailable)
+        {
+            _trayIconManager?.ShowBalloon(
+                "WidgX update available",
+                $"Version {info.LatestTag} is available. Click to download.",
+                () => OpenUrl(info.Url));
+        }
+        else if (manual)
+        {
+            _trayIconManager?.ShowBalloon("WidgX", "You're running the latest version.");
+        }
+    }
+
+    private static void OpenUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            // Ignore: best-effort open.
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)

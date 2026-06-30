@@ -60,6 +60,7 @@ public partial class ClockWidget : System.Windows.Controls.UserControl, IWidget
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         WidgetChrome.ApplyFont(this, config.FontFamily);
+        WidgetChrome.ApplyTextShadow(this, config.TextShadow);
         FontSize = config.FontSize;
 
         _dateFormat = config.Settings.TryGetValue("dateFormat", out var fmt) && !string.IsNullOrWhiteSpace(fmt)

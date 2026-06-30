@@ -115,6 +115,7 @@ public partial class DesignerWindow : Window
                     Id = w.Id, WidgetType = w.WidgetType, X = w.X, Y = w.Y,
                     Width = w.Width, Height = w.Height, Opacity = w.Opacity,
                     AccentColorHex = w.AccentColorHex, FontSize = w.FontSize, FontFamily = w.FontFamily,
+                    TextShadow = w.TextShadow,
                     Settings = new System.Collections.Generic.Dictionary<string, string>(w.Settings)
                 })
                 .ToList()
@@ -324,6 +325,8 @@ public partial class DesignerWindow : Window
         FontPicker.SelectedItem = fonts.FirstOrDefault(
             o => string.Equals(o.Family.Source, instance.FontFamily, StringComparison.OrdinalIgnoreCase)) ?? fonts.First();
 
+        TextShadowCheck.IsChecked = instance.TextShadow;
+
         var isNowPlaying = instance.WidgetType == "NowPlaying";
         NowPlayingOptions.Visibility = isNowPlaying ? Visibility.Visible : Visibility.Collapsed;
         if (isNowPlaying)
@@ -393,6 +396,7 @@ public partial class DesignerWindow : Window
         if (double.TryParse(OpacityBox.Text, out var o)) _selectedInstance.Opacity = o;
         if (double.TryParse(FontSizeBox.Text, out var fs)) _selectedInstance.FontSize = fs;
         if (FontPicker.SelectedItem is FontOption font) _selectedInstance.FontFamily = font.Family.Source;
+        _selectedInstance.TextShadow = TextShadowCheck.IsChecked == true;
         _selectedInstance.AccentColorHex = AccentColorBox.Text;
 
         if (_selectedInstance.WidgetType == "NowPlaying")

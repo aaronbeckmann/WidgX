@@ -14,5 +14,6 @@ public class WidgetInstance
     public string AccentColorHex { get; set; } = "#FFFFFF";
     public double FontSize { get; set; } = 14;
     public string FontFamily { get; set; } = "Segoe UI";
+    public bool TextShadow { get; set; }
     public Dictionary<string, string> Settings { get; set; } = new();
 }

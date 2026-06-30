@@ -7,12 +7,14 @@ namespace WidgX.Tray;
 public class TrayIconManager : IDisposable
 {
     private readonly NotifyIcon _notifyIcon;
+    private Action? _balloonClick;
 
-    public TrayIconManager(Action onEditLayout, Action onToggleVisibility, Action onExit)
+    public TrayIconManager(Action onEditLayout, Action onToggleVisibility, Action onCheckForUpdates, Action onExit)
     {
         var menu = new ContextMenuStrip();
         menu.Items.Add("Edit Layout", null, (_, _) => onEditLayout());
         menu.Items.Add("Toggle Overlay Visibility", null, (_, _) => onToggleVisibility());
+        menu.Items.Add("Check for Updates", null, (_, _) => onCheckForUpdates());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => onExit());
 
@@ -23,6 +25,20 @@ public class TrayIconManager : IDisposable
             ContextMenuStrip = menu,
             Visible = false
         };
+
+        _notifyIcon.BalloonTipClicked += (_, _) =>
+        {
+            var click = _balloonClick;
+            _balloonClick = null;
+            click?.Invoke();
+        };
+    }
+
+    /// <summary>Shows a tray notification; <paramref name="onClick"/> runs if it's clicked.</summary>
+    public void ShowBalloon(string title, string text, Action? onClick = null)
+    {
+        _balloonClick = onClick;
+        _notifyIcon.ShowBalloonTip(5000, title, text, ToolTipIcon.Info);
     }
 
     private static System.Drawing.Icon LoadEmbeddedIcon()

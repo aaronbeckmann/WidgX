@@ -41,6 +41,7 @@ public partial class BluetoothWidget : System.Windows.Controls.UserControl, IWid
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         WidgetChrome.ApplyFont(this, config.FontFamily);
+        WidgetChrome.ApplyTextShadow(this, config.TextShadow);
         FontSize = config.FontSize;
         _nameBrush = WidgetChrome.ParseAccent(config.AccentColorHex) ?? Brushes.White;
 

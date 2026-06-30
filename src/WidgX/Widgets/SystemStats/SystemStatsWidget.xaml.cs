@@ -27,6 +27,7 @@ public partial class SystemStatsWidget : System.Windows.Controls.UserControl, IW
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
         WidgetChrome.ApplyFont(this, config.FontFamily);
+        WidgetChrome.ApplyTextShadow(this, config.TextShadow);
         FontSize = config.FontSize;
         _ = Refresh();
     }
