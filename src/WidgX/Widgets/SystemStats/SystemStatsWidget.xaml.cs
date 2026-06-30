@@ -43,12 +43,14 @@ public partial class SystemStatsWidget : System.Windows.Controls.UserControl, IW
             CpuGauge.Value = _service.GetCpuUsagePercent();
             RamGauge.Value = _service.GetRamUsagePercent();
             GpuGauge.Value = _service.GetGpuUsagePercent();
+            VramGauge.Value = _service.GetVramUsagePercent() ?? 0;
         }
         catch (Exception)
         {
             CpuGauge.Value = 0;
             RamGauge.Value = 0;
             GpuGauge.Value = 0;
+            VramGauge.Value = 0;
         }
     }
 }

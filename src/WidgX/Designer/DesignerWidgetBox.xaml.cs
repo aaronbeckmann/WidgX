@@ -18,6 +18,15 @@ public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
     public event Action<WidgetInstance>? BoundsChanged;
     public event Action<WidgetInstance>? Selected;
 
+    /// <summary>
+    /// Given the dragged instance and its proposed top-left, returns the snapped
+    /// top-left (and draws alignment guides as a side effect). Set by the host.
+    /// </summary>
+    public Func<WidgetInstance, double, double, (double X, double Y)>? SnapResolver;
+
+    /// <summary>Raised when a drag finishes, so the host can clear guides.</summary>
+    public event Action? DragEnded;
+
     public DesignerWidgetBox(WidgetInstance instance, IWidget widget)
     {
         InitializeComponent();
@@ -55,6 +64,11 @@ public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
         var newX = _dragStartPosition.X + delta.X;
         var newY = _dragStartPosition.Y + delta.Y;
 
+        if (SnapResolver != null)
+        {
+            (newX, newY) = SnapResolver(_instance, newX, newY);
+        }
+
         Canvas.SetLeft(this, newX);
         Canvas.SetTop(this, newY);
 
@@ -65,8 +79,10 @@ public partial class DesignerWidgetBox : System.Windows.Controls.UserControl
 
     private void OnMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        if (!_isDragging) return;
         _isDragging = false;
         OuterBorder.ReleaseMouseCapture();
+        DragEnded?.Invoke();
     }
 
     private void OnResizeDrag(object sender, DragDeltaEventArgs e)

@@ -7,6 +7,7 @@
             <ctrl:RadialGauge x:Name="CpuGauge" Label="CPU" Width="64" Height="64" Margin="4" Accent="#4FC3F7" />
             <ctrl:RadialGauge x:Name="RamGauge" Label="RAM" Width="64" Height="64" Margin="4" Accent="#81C784" />
             <ctrl:RadialGauge x:Name="GpuGauge" Label="GPU" Width="64" Height="64" Margin="4" Accent="#BA68C8" />
+            <ctrl:RadialGauge x:Name="VramGauge" Label="VRAM" Width="64" Height="64" Margin="4" Accent="#FFB74D" />
         </StackPanel>
     </Border>
 </UserControl>

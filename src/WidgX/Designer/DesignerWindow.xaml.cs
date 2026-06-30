@@ -19,6 +19,7 @@ public partial class DesignerWindow : Window
     private ScreenInfo _selectedScreen;
     private WidgetInstance? _selectedInstance;
     private bool _suppressColorSync;
+    private readonly System.Collections.Generic.List<System.Windows.Shapes.Line> _guideLines = new();
 
     private static readonly string[] SwatchColors =
     {
@@ -105,6 +106,7 @@ public partial class DesignerWindow : Window
         CanvasResolutionLabel.Text = $"{(int)_selectedScreen.Bounds.Width} × {(int)_selectedScreen.Bounds.Height}";
 
         DesignCanvas.Children.Clear();
+        _guideLines.Clear();
 
         foreach (var instance in _workingLayout.Widgets)
         {
@@ -121,8 +123,66 @@ public partial class DesignerWindow : Window
         var box = new DesignerWidgetBox(instance, widget);
         box.Selected += OnWidgetSelected;
         box.BoundsChanged += _ => { if (_selectedInstance == instance) PopulatePropertiesPanel(instance); };
+        box.SnapResolver = ResolveSnap;
+        box.DragEnded += ClearGuides;
 
         DesignCanvas.Children.Add(box);
+    }
+
+    private (double X, double Y) ResolveSnap(WidgetInstance dragged, double x, double y)
+    {
+        var others = _workingLayout.Widgets
+            .Where(w => w != dragged)
+            .Select(w => new Rect(w.X, w.Y, w.Width, w.Height))
+            .ToList();
+
+        // Threshold proportional to canvas width keeps the on-screen "stickiness"
+        // roughly constant regardless of monitor resolution / Viewbox scale.
+        var threshold = DesignCanvas.Width * 0.012;
+        var result = SnapEngine.Snap(x, y, dragged.Width, dragged.Height,
+            others, DesignCanvas.Width, DesignCanvas.Height, threshold);
+
+        DrawGuides(result.GuideX, result.GuideY);
+        return (result.X, result.Y);
+    }
+
+    private void DrawGuides(double? guideX, double? guideY)
+    {
+        ClearGuides();
+
+        var thickness = Math.Max(1, DesignCanvas.Width * 0.003);
+        var brush = new SolidColorBrush(Color.FromRgb(0xFF, 0x4C, 0x9A));
+
+        if (guideX is { } gx)
+        {
+            var line = new System.Windows.Shapes.Line
+            {
+                X1 = gx, X2 = gx, Y1 = 0, Y2 = DesignCanvas.Height,
+                Stroke = brush, StrokeThickness = thickness, IsHitTestVisible = false
+            };
+            _guideLines.Add(line);
+            DesignCanvas.Children.Add(line);
+        }
+
+        if (guideY is { } gy)
+        {
+            var line = new System.Windows.Shapes.Line
+            {
+                X1 = 0, X2 = DesignCanvas.Width, Y1 = gy, Y2 = gy,
+                Stroke = brush, StrokeThickness = thickness, IsHitTestVisible = false
+            };
+            _guideLines.Add(line);
+            DesignCanvas.Children.Add(line);
+        }
+    }
+
+    private void ClearGuides()
+    {
+        foreach (var line in _guideLines)
+        {
+            DesignCanvas.Children.Remove(line);
+        }
+        _guideLines.Clear();
     }
 
     private void OnWidgetSelected(WidgetInstance instance)

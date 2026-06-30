@@ -7,12 +7,12 @@ public static class SystemStatsWidgetRegistration
         WidgetRegistry.Register(new WidgetTypeDefinition
         {
             TypeName = "SystemStats",
-            DisplayName = "System Stats (CPU/RAM/GPU)",
+            DisplayName = "System Stats (CPU/RAM/GPU/VRAM)",
             CreateWidget = () => new SystemStatsWidget(),
             CreateDefaultInstance = () => new Models.WidgetInstance
             {
                 WidgetType = "SystemStats",
-                Width = 180,
+                Width = 310,
                 Height = 100,
                 Opacity = 0.9,
                 AccentColorHex = "#FFFFFF",
