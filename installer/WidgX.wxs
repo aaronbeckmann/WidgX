@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   WidgX per-user installer (no administrator rights required).
-  Installs the self-contained build into %LOCALAPPDATA%\Programs\WidgX, adds a
-  Start Menu shortcut, and registers an Add/Remove Programs entry.
+  Installs the self-contained build into %LOCALAPPDATA%\Programs\WidgX, adds Start
+  Menu shortcuts (run, check for updates, uninstall), shows a proper install
+  wizard, and registers an Add/Remove Programs entry (with Repair/Remove).
 
-  Build:  wix build installer\WidgX.wxs -arch x64 -d PublishDir=build -o dist\WidgX.msi
+  Build:
+    wix build installer\WidgX.wxs -arch x64 -ext WixToolset.UI.wixext ^
+        -d "PublishDir=...\build" -d "LicenseRtf=...\installer\license.rtf" ^
+        -o dist\WidgX.msi
 -->
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="WidgX"
            Manufacturer="Aaron Beckmann"
            Version="1.0.0.0"
@@ -17,28 +22,42 @@
     <MajorUpgrade DowngradeErrorMessage="A newer version of WidgX is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
+    <!-- Install wizard (Welcome / License / Progress / Finish) and, when re-run,
+         the maintenance dialog with Repair and Remove (uninstall). -->
+    <ui:WixUI Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
+
     <Icon Id="AppIcon" SourceFile="$(var.PublishDir)\WidgX.exe" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
     <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/aaronbeckmann/WidgX" />
 
     <StandardDirectory Id="LocalAppDataFolder">
       <Directory Id="ProgramsFolder" Name="Programs">
         <Directory Id="INSTALLFOLDER" Name="WidgX" />
       </Directory>
     </StandardDirectory>
-    <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppProgramMenuDir" Name="WidgX" />
+    </StandardDirectory>
 
     <Feature Id="Main" Title="WidgX" Level="1">
       <!-- Harvest every file from the self-contained publish output. -->
       <Files Include="$(var.PublishDir)\**" Directory="INSTALLFOLDER" />
 
-      <!-- Start Menu shortcut (own component with an HKCU keypath, as required
-           for a per-user non-advertised shortcut). -->
-      <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="*">
-        <Shortcut Id="WidgXShortcut" Name="WidgX" Description="Desktop widgets"
-                  Target="[INSTALLFOLDER]WidgX.exe" WorkingDirectory="INSTALLFOLDER"
-                  Icon="AppIcon" />
-        <RegistryValue Root="HKCU" Key="Software\WidgX" Name="shortcut" Type="integer"
+      <!-- Start Menu shortcuts: run, check for updates, uninstall. -->
+      <Component Id="StartMenuShortcuts" Directory="AppProgramMenuDir" Guid="*">
+        <Shortcut Id="RunShortcut" Name="WidgX" Description="Desktop widgets"
+                  Target="[INSTALLFOLDER]WidgX.exe" WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+        <Shortcut Id="UpdateShortcut" Name="Check for Updates"
+                  Description="Check GitHub for a newer version of WidgX"
+                  Target="[INSTALLFOLDER]WidgX.exe" Arguments="--check-updates"
+                  WorkingDirectory="INSTALLFOLDER" Icon="AppIcon" />
+        <Shortcut Id="UninstallShortcut" Name="Uninstall WidgX"
+                  Description="Remove WidgX"
+                  Target="[System64Folder]msiexec.exe" Arguments="/x [ProductCode]" />
+        <RemoveFolder Id="RemoveAppProgramMenuDir" Directory="AppProgramMenuDir" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\WidgX" Name="shortcuts" Type="integer"
                        Value="1" KeyPath="yes" />
       </Component>
 

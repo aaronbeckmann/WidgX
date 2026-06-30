@@ -15,6 +15,7 @@ using WidgX.Widgets.Todos;
 using WidgX.Widgets.Uptime;
 using WidgX.Widgets.Weather;
 using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace WidgX;
 
@@ -27,6 +28,15 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Standalone "check for updates" mode (e.g. from the Start Menu shortcut):
+        // show a dialog with the result and exit, without starting the overlay.
+        if (WidgX.Startup.LaunchArgs.IsCheckUpdates(e.Args))
+        {
+            _ = RunStandaloneUpdateCheckAsync();
+            return;
+        }
+
         _isBackgroundLaunch = WidgX.Startup.LaunchArgs.IsBackgroundLaunch(e.Args);
 
         ClockWidgetRegistration.Register();
@@ -102,6 +112,32 @@ public partial class App : Application
         {
             _trayIconManager?.ShowBalloon("WidgX", "You're running the latest version.");
         }
+    }
+
+    private async Task RunStandaloneUpdateCheckAsync()
+    {
+        var current = typeof(App).Assembly.GetName().Version ?? new Version(1, 0, 0);
+        var info = await new UpdateService().CheckAsync(current);
+
+        if (info == null)
+        {
+            MessageBox.Show("Couldn't check for updates. Please try again later.", "WidgX",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        else if (info.IsAvailable)
+        {
+            var result = MessageBox.Show(
+                $"WidgX {info.LatestTag} is available (you have {current.Major}.{current.Minor}.{current.Build}).\n\nOpen the download page?",
+                "WidgX update available", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (result == MessageBoxResult.Yes) OpenUrl(info.Url);
+        }
+        else
+        {
+            MessageBox.Show("You're running the latest version of WidgX.", "WidgX",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        Shutdown();
     }
 
     private static void OpenUrl(string url)

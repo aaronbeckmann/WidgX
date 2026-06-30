@@ -8,4 +8,9 @@ public static class LaunchArgs
     {
         return args.Contains("--background");
     }
+
+    public static bool IsCheckUpdates(string[] args)
+    {
+        return args.Contains("--check-updates");
+    }
 }
