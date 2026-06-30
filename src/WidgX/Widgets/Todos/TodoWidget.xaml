@@ -1,6 +1,7 @@
 <UserControl x:Class="WidgX.Widgets.Todos.TodoWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrl="clr-namespace:WidgX.Controls">
     <UserControl.Resources>
         <!-- Rounded, accent-filled checkbox with a tick. -->
         <Style x:Key="TodoCheckBoxStyle" TargetType="CheckBox">
@@ -83,8 +84,8 @@
                 <DockPanel>
                     <Button x:Name="AddButton" DockPanel.Dock="Right" Style="{StaticResource AddButtonStyle}"
                             Click="OnAddClick" Margin="6,0,0,0" />
-                    <DatePicker x:Name="NewItemDueDate" DockPanel.Dock="Right" Width="118"
-                                VerticalAlignment="Center" />
+                    <ctrl:DatePickerLite x:Name="NewItemDueDate" DockPanel.Dock="Right" Width="128"
+                                         VerticalAlignment="Center" Margin="6,0,0,0" />
                     <Grid VerticalAlignment="Center">
                         <TextBox x:Name="NewItemText" Background="Transparent" BorderThickness="0"
                                  VerticalContentAlignment="Center" KeyDown="OnNewItemKeyDown" />

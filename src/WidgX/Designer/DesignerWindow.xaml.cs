@@ -87,7 +87,7 @@ public partial class DesignerWindow : Window
         ClockOrder2.ItemsSource = ClockItems;
         ClockOrder3.ItemsSource = ClockItems;
         ClockDateFormat.ItemsSource = DateFormats;
-        FontPicker.ItemsSource = FontNames.Select(n => new FontFamily(n)).ToList();
+        FontPicker.ItemsSource = BuildFontList();
         RebuildCanvas();
     }
 
