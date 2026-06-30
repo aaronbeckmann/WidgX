@@ -9,6 +9,7 @@ using WidgX.Widgets;
 using Color = System.Windows.Media.Color;
 using SolidColorBrush = System.Windows.Media.SolidColorBrush;
 using Cursors = System.Windows.Input.Cursors;
+using FontFamily = System.Windows.Media.FontFamily;
 
 namespace WidgX.Designer;
 
@@ -28,6 +29,13 @@ public partial class DesignerWindow : Window
     };
 
     private static readonly string[] ClockItems = { "Time", "Weekday", "Date" };
+
+    private static readonly string[] FontNames =
+    {
+        "Segoe UI", "Segoe UI Variable Display", "Arial", "Calibri", "Cambria", "Consolas",
+        "Courier New", "Georgia", "Impact", "Lucida Console", "Segoe Print", "Segoe Script",
+        "Tahoma", "Times New Roman", "Trebuchet MS", "Verdana", "Comic Sans MS"
+    };
 
     private sealed record DateFormatOption(string Label, string Format);
 
@@ -53,7 +61,7 @@ public partial class DesignerWindow : Window
                 {
                     Id = w.Id, WidgetType = w.WidgetType, X = w.X, Y = w.Y,
                     Width = w.Width, Height = w.Height, Opacity = w.Opacity,
-                    AccentColorHex = w.AccentColorHex, FontSize = w.FontSize,
+                    AccentColorHex = w.AccentColorHex, FontSize = w.FontSize, FontFamily = w.FontFamily,
                     Settings = new System.Collections.Generic.Dictionary<string, string>(w.Settings)
                 })
                 .ToList()
@@ -79,6 +87,7 @@ public partial class DesignerWindow : Window
         ClockOrder2.ItemsSource = ClockItems;
         ClockOrder3.ItemsSource = ClockItems;
         ClockDateFormat.ItemsSource = DateFormats;
+        FontPicker.ItemsSource = FontNames.Select(n => new FontFamily(n)).ToList();
         RebuildCanvas();
     }
 
@@ -258,6 +267,10 @@ public partial class DesignerWindow : Window
         AccentColorBox.Text = instance.AccentColorHex;
         FontSizeBox.Text = instance.FontSize.ToString("0");
 
+        var fonts = (System.Collections.Generic.IEnumerable<FontFamily>)FontPicker.ItemsSource;
+        FontPicker.SelectedItem = fonts.FirstOrDefault(
+            f => string.Equals(f.Source, instance.FontFamily, StringComparison.OrdinalIgnoreCase)) ?? fonts.First();
+
         var isNowPlaying = instance.WidgetType == "NowPlaying";
         NowPlayingOptions.Visibility = isNowPlaying ? Visibility.Visible : Visibility.Collapsed;
         if (isNowPlaying)
@@ -326,6 +339,7 @@ public partial class DesignerWindow : Window
         if (double.TryParse(HeightBox.Text, out var h)) _selectedInstance.Height = h;
         if (double.TryParse(OpacityBox.Text, out var o)) _selectedInstance.Opacity = o;
         if (double.TryParse(FontSizeBox.Text, out var fs)) _selectedInstance.FontSize = fs;
+        if (FontPicker.SelectedItem is FontFamily font) _selectedInstance.FontFamily = font.Source;
         _selectedInstance.AccentColorHex = AccentColorBox.Text;
 
         if (_selectedInstance.WidgetType == "NowPlaying")

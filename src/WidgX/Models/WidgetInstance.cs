@@ -13,5 +13,6 @@ public class WidgetInstance
     public double Opacity { get; set; } = 1.0;
     public string AccentColorHex { get; set; } = "#FFFFFF";
     public double FontSize { get; set; } = 14;
+    public string FontFamily { get; set; } = "Segoe UI";
     public Dictionary<string, string> Settings { get; set; } = new();
 }

@@ -28,7 +28,14 @@ public partial class WeatherWidget : System.Windows.Controls.UserControl, IWidge
         Width = config.Width;
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
+        WidgetChrome.ApplyFont(this, config.FontFamily);
         FontSize = config.FontSize;
+
+        if (WidgetChrome.ParseAccent(config.AccentColorHex) is { } accent)
+        {
+            CurrentTemp.Foreground = accent;
+        }
+
         _ = Refresh();
     }
 

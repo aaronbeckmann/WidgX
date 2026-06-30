@@ -32,7 +32,45 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         InitializeComponent();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _timer.Tick += async (_, _) => await Refresh();
-        SizeChanged += (_, _) => UpdateCoverSize();
+        SizeChanged += (_, _) =>
+        {
+            UpdateCoverSize();
+            ScheduleMarquee();
+        };
+    }
+
+    private void ScheduleMarquee()
+        => Dispatcher.BeginInvoke(new Action(UpdateMarquee), DispatcherPriority.Loaded);
+
+    private void UpdateMarquee()
+    {
+        if (TextClip.ActualWidth <= 0) return;
+
+        NowPlayingText.UpdateLayout();
+        var overflow = NowPlayingText.ActualWidth - TextClip.ActualWidth;
+
+        TextScroll.BeginAnimation(TranslateTransform.XProperty, null);
+        TextScroll.X = 0;
+
+        if (overflow <= 2) return;
+
+        var distance = overflow + 12;
+        var animation = new DoubleAnimation
+        {
+            From = 0,
+            To = -distance,
+            Duration = TimeSpan.FromSeconds(Math.Max(3, distance / 30.0)),
+            AutoReverse = true,
+            RepeatBehavior = RepeatBehavior.Forever,
+            BeginTime = TimeSpan.FromSeconds(1.5)
+        };
+        TextScroll.BeginAnimation(TranslateTransform.XProperty, animation);
+    }
+
+    private void StopMarquee()
+    {
+        TextScroll.BeginAnimation(TranslateTransform.XProperty, null);
+        TextScroll.X = 0;
     }
 
     private void UpdateCoverSize()
@@ -67,7 +105,13 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         Width = config.Width;
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
+        WidgetChrome.ApplyFont(this, config.FontFamily);
         FontSize = config.FontSize;
+
+        if (WidgetChrome.ParseAccent(config.AccentColorHex) is { } accent)
+        {
+            NowPlayingText.Foreground = accent;
+        }
 
         _showCover = ReadBool(config.Settings, "showCover", true);
         _spinCover = ReadBool(config.Settings, "spinCover", true);
@@ -115,6 +159,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             _lastTrackKey = null;
             UpdateSpin(false);
             StopColorBackground();
+            StopMarquee();
             return;
         }
 
@@ -133,7 +178,11 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
         var trackKey = $"{info.Title}|{info.Artist}";
         var trackChanged = trackKey != _lastTrackKey;
-        if (trackChanged) _lastTrackKey = trackKey;
+        if (trackChanged)
+        {
+            _lastTrackKey = trackKey;
+            ScheduleMarquee();
+        }
 
         BitmapImage? bmp = null;
         if ((_showCover || _colorBackground) && trackChanged)

@@ -23,7 +23,14 @@ public partial class UptimeWidget : System.Windows.Controls.UserControl, IWidget
         Width = config.Width;
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
+        WidgetChrome.ApplyFont(this, config.FontFamily);
         FontSize = config.FontSize;
+
+        if (WidgetChrome.ParseAccent(config.AccentColorHex) is { } accent)
+        {
+            UptimeText.Foreground = accent;
+        }
+
         Refresh();
     }
 

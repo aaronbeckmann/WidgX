@@ -24,6 +24,7 @@ public partial class BluetoothWidget : System.Windows.Controls.UserControl, IWid
 
     private string _deviceName = string.Empty;
     private bool _showAll;
+    private Brush _nameBrush = Brushes.White;
 
     public BluetoothWidget()
     {
@@ -39,7 +40,9 @@ public partial class BluetoothWidget : System.Windows.Controls.UserControl, IWid
         Width = config.Width;
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
+        WidgetChrome.ApplyFont(this, config.FontFamily);
         FontSize = config.FontSize;
+        _nameBrush = WidgetChrome.ParseAccent(config.AccentColorHex) ?? Brushes.White;
 
         _deviceName = config.Settings.TryGetValue("deviceName", out var name) ? name : string.Empty;
         _showAll = config.Settings.TryGetValue("showAll", out var raw) && bool.TryParse(raw, out var b) && b;
@@ -91,7 +94,7 @@ public partial class BluetoothWidget : System.Windows.Controls.UserControl, IWid
             var nameText = new TextBlock
             {
                 Text = name,
-                Foreground = Brushes.White,
+                Foreground = _nameBrush,
                 VerticalAlignment = VerticalAlignment.Center
             };
             DockPanel.SetDock(nameText, Dock.Left);

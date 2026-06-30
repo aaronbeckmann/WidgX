@@ -35,6 +35,7 @@ public partial class TodoWidget : System.Windows.Controls.UserControl, IWidget
         Width = config.Width;
         Height = config.Height;
         WidgetChrome.ApplyBackgroundOpacity(this, config.Opacity);
+        WidgetChrome.ApplyFont(this, config.FontFamily);
         FontSize = config.FontSize;
 
         Reload();

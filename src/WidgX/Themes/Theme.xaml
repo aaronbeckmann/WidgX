@@ -54,8 +54,10 @@
          dark. Overlay widgets set their own foregrounds, so these defaults are
          harmless there. -->
 
+    <!-- NB: deliberately no FontFamily setter here. The implicit style would
+         otherwise win over property inheritance and prevent per-widget fonts from
+         applying to the widgets' text. -->
     <Style TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
     </Style>
 
