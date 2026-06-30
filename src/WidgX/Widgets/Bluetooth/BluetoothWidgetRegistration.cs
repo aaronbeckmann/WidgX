@@ -7,12 +7,12 @@ public static class BluetoothWidgetRegistration
         WidgetRegistry.Register(new WidgetTypeDefinition
         {
             TypeName = "Bluetooth",
-            DisplayName = "Bluetooth Battery",
+            DisplayName = "Battery (BT / USB devices)",
             CreateWidget = () => new BluetoothWidget(),
             CreateDefaultInstance = () => new Models.WidgetInstance
             {
                 WidgetType = "Bluetooth",
-                Width = 180,
+                Width = 200,
                 Height = 70,
                 Opacity = 0.9,
                 AccentColorHex = "#FFFFFF",

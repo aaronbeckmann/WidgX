@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Windows.Storage.Streams;
 using WidgX.Models;
+using Color = System.Windows.Media.Color;
 
 namespace WidgX.Widgets.NowPlaying;
 
@@ -20,6 +21,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
     private bool _showCover = true;
     private bool _spinCover = true;
+    private bool _colorBackground;
     private bool _spinning;
     private string? _lastTrackKey;
     private int _emptyReads;
@@ -29,6 +31,20 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         InitializeComponent();
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _timer.Tick += async (_, _) => await Refresh();
+        SizeChanged += (_, _) => UpdateCoverSize();
+    }
+
+    private void UpdateCoverSize()
+    {
+        // Scale the album disk with the widget's height (leaving room for padding
+        // and the progress bar), and keep the circular clip in sync.
+        var size = Math.Clamp(ActualHeight - 36, 36, 240);
+        CoverHost.Width = size;
+        CoverHost.Height = size;
+        CoverClip.Center = new System.Windows.Point(size / 2, size / 2);
+        CoverClip.RadiusX = size / 2;
+        CoverClip.RadiusY = size / 2;
+        Spindle.Width = Spindle.Height = Math.Max(6, size * 0.18);
     }
 
     System.Windows.Controls.UserControl IWidget.View => this;
@@ -42,8 +58,11 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
 
         _showCover = ReadBool(config.Settings, "showCover", true);
         _spinCover = ReadBool(config.Settings, "spinCover", true);
+        _colorBackground = ReadBool(config.Settings, "colorBackground", false);
         _lastTrackKey = null; // force the cover to reload on the next refresh
 
+        if (!_colorBackground) StopColorBackground();
+        UpdateCoverSize();
         _ = Refresh();
     }
 
@@ -53,6 +72,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
     {
         _timer.Stop();
         UpdateSpin(false);
+        StopColorBackground();
     }
 
     private static bool ReadBool(IDictionary<string, string> settings, string key, bool fallback)
@@ -80,6 +100,7 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             CoverHost.Visibility = Visibility.Collapsed;
             _lastTrackKey = null;
             UpdateSpin(false);
+            StopColorBackground();
             return;
         }
 
@@ -96,13 +117,20 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             TrackProgress.Visibility = Visibility.Collapsed;
         }
 
+        var trackKey = $"{info.Title}|{info.Artist}";
+        var trackChanged = trackKey != _lastTrackKey;
+        if (trackChanged) _lastTrackKey = trackKey;
+
+        BitmapImage? bmp = null;
+        if ((_showCover || _colorBackground) && trackChanged)
+        {
+            bmp = await LoadThumbnailAsync(info.Thumbnail);
+        }
+
         if (_showCover)
         {
-            var key = $"{info.Title}|{info.Artist}";
-            if (key != _lastTrackKey)
+            if (trackChanged)
             {
-                _lastTrackKey = key;
-                var bmp = await LoadThumbnailAsync(info.Thumbnail);
                 CoverImage.Source = bmp;
                 CoverHost.Visibility = bmp != null ? Visibility.Visible : Visibility.Collapsed;
             }
@@ -110,7 +138,19 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
         else
         {
             CoverHost.Visibility = Visibility.Collapsed;
-            _lastTrackKey = null;
+        }
+
+        if (_colorBackground && trackChanged)
+        {
+            if (bmp != null)
+            {
+                var (pixels, pw, ph) = GetCoverPixels(bmp, 24);
+                StartColorBackground(PaletteExtractor.Extract(pixels, pw, ph, 4));
+            }
+            else
+            {
+                StopColorBackground();
+            }
         }
 
         // Spin only while actually playing, and never tear the animation down for
@@ -140,6 +180,61 @@ public partial class NowPlayingWidget : System.Windows.Controls.UserControl, IWi
             _spinning = false;
         }
     }
+
+    private static (byte[] Pixels, int Width, int Height) GetCoverPixels(BitmapSource source, int target)
+    {
+        var scale = (double)target / Math.Max(source.PixelWidth, source.PixelHeight);
+        var scaled = new TransformedBitmap(source, new ScaleTransform(scale, scale));
+        var converted = new FormatConvertedBitmap(scaled, PixelFormats.Bgra32, null, 0);
+
+        int w = converted.PixelWidth, h = converted.PixelHeight;
+        var stride = w * 4;
+        var pixels = new byte[h * stride];
+        converted.CopyPixels(pixels, stride, 0);
+        return (pixels, w, h);
+    }
+
+    private void StartColorBackground(List<Color> palette)
+    {
+        if (palette.Count == 0)
+        {
+            StopColorBackground();
+            return;
+        }
+
+        var colors = palette.Count >= 2
+            ? palette
+            : new List<Color> { palette[0], Darken(palette[0]) };
+
+        ColorBackground.Visibility = Visibility.Visible;
+        AnimateStop(ColorStop0, colors, 0);
+        AnimateStop(ColorStop1, colors, colors.Count / 2);
+    }
+
+    private void StopColorBackground()
+    {
+        ColorStop0.BeginAnimation(GradientStop.ColorProperty, null);
+        ColorStop1.BeginAnimation(GradientStop.ColorProperty, null);
+        ColorBackground.Visibility = Visibility.Collapsed;
+    }
+
+    private static void AnimateStop(GradientStop stop, List<Color> colors, int phase)
+    {
+        var animation = new ColorAnimationUsingKeyFrames { RepeatBehavior = RepeatBehavior.Forever };
+        const double secondsPerColor = 4.0;
+
+        for (var i = 0; i <= colors.Count; i++)
+        {
+            var c = colors[(phase + i) % colors.Count];
+            var soft = Color.FromArgb(0xB0, c.R, c.G, c.B); // keep the wash subtle
+            animation.KeyFrames.Add(new LinearColorKeyFrame(soft, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(secondsPerColor * i))));
+        }
+
+        stop.BeginAnimation(GradientStop.ColorProperty, animation);
+    }
+
+    private static Color Darken(Color c)
+        => Color.FromRgb((byte)(c.R * 0.5), (byte)(c.G * 0.5), (byte)(c.B * 0.5));
 
     private static async Task<BitmapImage?> LoadThumbnailAsync(IRandomAccessStreamReference? reference)
     {

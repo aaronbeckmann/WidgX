@@ -264,6 +264,7 @@ public partial class DesignerWindow : Window
         {
             ShowCoverCheck.IsChecked = ReadBoolSetting(instance, "showCover", true);
             SpinCoverCheck.IsChecked = ReadBoolSetting(instance, "spinCover", true);
+            ColorBackgroundCheck.IsChecked = ReadBoolSetting(instance, "colorBackground", false);
         }
 
         var isBluetooth = instance.WidgetType == "Bluetooth";
@@ -271,7 +272,7 @@ public partial class DesignerWindow : Window
         if (isBluetooth)
         {
             BluetoothAllDevicesCheck.IsChecked = ReadBoolSetting(instance, "showAll", false);
-            _ = PopulateBluetoothDevicesAsync(instance.Settings.TryGetValue("deviceId", out var id) ? id : null);
+            _ = PopulateBatteryDevicesAsync(instance.Settings.TryGetValue("deviceName", out var dn) ? dn : null);
         }
 
         var isClock = instance.WidgetType == "Clock";
@@ -297,17 +298,18 @@ public partial class DesignerWindow : Window
         }
     }
 
-    private async System.Threading.Tasks.Task PopulateBluetoothDevicesAsync(string? selectedId)
+    private async System.Threading.Tasks.Task PopulateBatteryDevicesAsync(string? selectedName)
     {
-        var devices = await new Widgets.Bluetooth.BluetoothDeviceService().GetPairedDevicesAsync();
+        var devices = await new Widgets.Battery.BatteryDeviceService().GetDevicesAsync();
         BluetoothDevicePicker.ItemsSource = devices;
-        BluetoothDevicePicker.SelectedItem = devices.FirstOrDefault(d => d.Id == selectedId);
+        BluetoothDevicePicker.SelectedItem = devices.FirstOrDefault(
+            d => string.Equals(d.Name, selectedName, StringComparison.OrdinalIgnoreCase));
     }
 
     private void OnRefreshBluetooth(object sender, RoutedEventArgs e)
     {
-        var currentId = _selectedInstance?.Settings.TryGetValue("deviceId", out var id) == true ? id : null;
-        _ = PopulateBluetoothDevicesAsync(currentId);
+        var currentName = _selectedInstance?.Settings.TryGetValue("deviceName", out var dn) == true ? dn : null;
+        _ = PopulateBatteryDevicesAsync(currentName);
     }
 
     private static bool ReadBoolSetting(WidgetInstance instance, string key, bool fallback)
@@ -329,13 +331,13 @@ public partial class DesignerWindow : Window
         {
             _selectedInstance.Settings["showCover"] = (ShowCoverCheck.IsChecked == true).ToString();
             _selectedInstance.Settings["spinCover"] = (SpinCoverCheck.IsChecked == true).ToString();
+            _selectedInstance.Settings["colorBackground"] = (ColorBackgroundCheck.IsChecked == true).ToString();
         }
 
         if (_selectedInstance.WidgetType == "Bluetooth")
         {
-            if (BluetoothDevicePicker.SelectedItem is Widgets.Bluetooth.BluetoothDeviceEntry device)
+            if (BluetoothDevicePicker.SelectedItem is Widgets.Battery.BatteryDevice device)
             {
-                _selectedInstance.Settings["deviceId"] = device.Id;
                 _selectedInstance.Settings["deviceName"] = device.Name;
             }
             _selectedInstance.Settings["showAll"] = (BluetoothAllDevicesCheck.IsChecked == true).ToString();

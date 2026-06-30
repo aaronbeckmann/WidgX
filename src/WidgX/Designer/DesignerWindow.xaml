@@ -89,11 +89,12 @@
                             <TextBlock Text="Now Playing" FontWeight="Bold" Margin="0,0,0,4" />
                             <CheckBox x:Name="ShowCoverCheck" Content="Show cover art" />
                             <CheckBox x:Name="SpinCoverCheck" Content="Spin cover (record disk)" Margin="0,4,0,0" />
+                            <CheckBox x:Name="ColorBackgroundCheck" Content="Color-fade background (from cover)" Margin="0,4,0,0" />
                         </StackPanel>
                         <StackPanel x:Name="BluetoothOptions" Visibility="Collapsed" Margin="0,10,0,0">
-                            <TextBlock Text="Bluetooth device" FontWeight="Bold" Margin="0,0,0,4" />
+                            <TextBlock Text="Battery device" FontWeight="Bold" Margin="0,0,0,4" />
                             <ComboBox x:Name="BluetoothDevicePicker" DisplayMemberPath="Name" />
-                            <CheckBox x:Name="BluetoothAllDevicesCheck" Content="Show all connected devices"
+                            <CheckBox x:Name="BluetoothAllDevicesCheck" Content="Show all devices with battery"
                                       Margin="0,6,0,0" />
                             <Button x:Name="RefreshBluetoothButton" Content="Refresh devices"
                                     Margin="0,6,0,0" Click="OnRefreshBluetooth" />
