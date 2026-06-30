@@ -7,7 +7,7 @@ REM     dotnet tool install --global wix --version 5.0.2
 REM     wix extension add -g WixToolset.UI.wixext/5.0.2
 setlocal
 set "ROOT=%~dp0.."
-set "VERSION=1.0.1"
+set "VERSION=1.0.2"
 set "OUT=%ROOT%\dist\WidgX-%VERSION%-win-x64.msi"
 
 echo Building self-contained app ...

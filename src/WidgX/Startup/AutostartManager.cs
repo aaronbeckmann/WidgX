@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Win32;
 
 namespace WidgX.Startup;
@@ -20,7 +21,7 @@ public static class AutostartManager
 
         if (enabled)
         {
-            var exePath = exePathOverride ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var exePath = exePathOverride ?? GetExecutablePath();
             key.SetValue(valueName, $"\"{exePath}\" --background");
         }
         else
@@ -28,4 +29,23 @@ public static class AutostartManager
             key.DeleteValue(valueName, throwOnMissingValue: false);
         }
     }
+
+    /// <summary>
+    /// If autostart is enabled, rewrites its command to point at the current
+    /// executable. Self-heals stale entries — e.g. after an update, or the earlier
+    /// bug that stored the .dll path (which Windows can't launch).
+    /// </summary>
+    public static void RefreshIfEnabled(string valueName = DefaultValueName)
+    {
+        if (IsEnabled(valueName))
+        {
+            SetEnabled(true, valueName);
+        }
+    }
+
+    // Environment.ProcessPath is the actual launching executable (WidgX.exe).
+    // Assembly.Location points at the managed .dll for self-contained apps (and is
+    // empty for single-file), which Windows cannot run as an autostart command.
+    private static string GetExecutablePath()
+        => Environment.ProcessPath ?? System.Reflection.Assembly.GetExecutingAssembly().Location;
 }

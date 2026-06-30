@@ -13,7 +13,7 @@ public partial class OverlayWindow : Window
     private List<Rect> _widgetBounds = new();
     private HwndSource? _hwndSource;
     private readonly WidgetHost _widgetHost = new();
-    private readonly Rect _screenBounds;
+    private Rect _screenBounds;
 
     public OverlayWindow(Rect screenBounds)
     {
@@ -37,6 +37,27 @@ public partial class OverlayWindow : Window
     {
         var bounds = _widgetHost.LoadLayout(layout, RootCanvas);
         SetWidgetBounds(bounds);
+    }
+
+    /// <summary>Repositions the overlay onto the given monitor bounds (physical pixels).</summary>
+    public void MoveToScreen(Rect screenBounds)
+    {
+        if (screenBounds == _screenBounds) return;
+        _screenBounds = screenBounds;
+
+        Left = screenBounds.X;
+        Top = screenBounds.Y;
+        Width = screenBounds.Width;
+        Height = screenBounds.Height;
+
+        if (_hwndSource != null)
+        {
+            NativeMethods.SetWindowPos(
+                _hwndSource.Handle, IntPtr.Zero,
+                (int)screenBounds.X, (int)screenBounds.Y,
+                (int)screenBounds.Width, (int)screenBounds.Height,
+                NativeMethods.SWP_NOZORDER | NativeMethods.SWP_NOACTIVATE);
+        }
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)

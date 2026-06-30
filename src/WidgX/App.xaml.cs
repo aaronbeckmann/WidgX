@@ -40,6 +40,10 @@ public partial class App : Application
 
         _isBackgroundLaunch = WidgX.Startup.LaunchArgs.IsBackgroundLaunch(e.Args);
 
+        // Self-heal the autostart entry (older builds stored the .dll path, which
+        // Windows can't launch) and keep it pointed at the current executable.
+        WidgX.Startup.AutostartManager.RefreshIfEnabled();
+
         ClockWidgetRegistration.Register();
         CalendarWidgetRegistration.Register();
         TodoWidgetRegistration.Register();
@@ -102,6 +106,11 @@ public partial class App : Application
         {
             LayoutStore.Save(AppPaths.LayoutFilePath, savedLayout);
             _overlayWindow!.ReloadLayout(savedLayout);
+
+            // Move the overlay onto the (possibly changed) selected monitor.
+            var screens = ScreenResolver.GetAllScreens();
+            var selected = ScreenResolver.ResolveSelected(savedLayout.SelectedScreenId, screens);
+            _overlayWindow.MoveToScreen(selected.Bounds);
         });
         _designerWindow.Closed += (_, _) => _designerWindow = null;
         _designerWindow.Show();
